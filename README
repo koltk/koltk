@@ -1,8 +1,0 @@
-
-
-
-
-How to use kltk module: Let $KLTK is the project home directory,
-
-$ export PYTHONPATH=$KLTK/lib/python2.6
-
