@@ -44,8 +44,8 @@ import sys
 import re
 
 # intra-package references
-from morph import Morph
-from morph import Word
+from .morph import Morph
+from .morph import Word
 
 class ForestWalker:
 	"""ForestWalker
@@ -118,7 +118,7 @@ class ForestWalker:
 
 		return line.strip()
 
-	def next(self):
+	def __next__(self):
 		return self.readtree()
 
 
@@ -333,12 +333,12 @@ class Node:
 #================
 # TEST CODE
 
-class code:
+class Encode:
     def __init__(self, stdout, enc):
         self.stdout = stdout
         self.encoding = enc
     def write(self, s):
-        self.stdout.write(s.encode(self.encoding))
+        self.stdout.buffer.write(s.encode(self.encoding))
 
 
 
@@ -354,7 +354,7 @@ class Test:
 		for tree in self.fw:
 			for n in tree.nodes:
 				for m in n.word.morphs:
-					print m.form + "/" + m.pos
+					print(m.form + "/" + m.pos)
 
 	def print_emi_pair(self):
 		for tree in self.fw:
@@ -397,14 +397,14 @@ class Test:
 							for m in n.word.morphs :
 								if m.pos == "EC":
 									sys.stdout.write("-" + m.form)
-					print ""
+					print("")
 
 
 
 			#self.print_node(tree.root, 0)
 
 	def print_node(self, node, depth):
-		print "\t"*depth + node.word
+		print("\t"*depth + node.word)
 		for n in node.children:
 			self.print_node(n, depth+1)
 	

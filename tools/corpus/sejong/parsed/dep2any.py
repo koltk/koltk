@@ -17,7 +17,7 @@ $ dep2any sejong-parsed.dep > sejong-parsed.fs
 import codecs
 import sys
 import re
-from kltk.corpus.sejong.dep import ForestWalker
+from koltk.corpus.sejong.dep import ForestWalker
 
 class Encode:
     def __init__(self, stdout, enc):
@@ -25,7 +25,7 @@ class Encode:
         self.encoding = enc
 
     def write(self, s):
-        self.stdout.write(s.encode(self.encoding))
+        self.stdout.buffer.write(s.encode(self.encoding))
 
 
 
@@ -44,7 +44,7 @@ class Convert:
 			list = tree.nodes
 			list.remove(root)
 			self.print_node(list, root, 1)
-			print ")"
+			print(")")
 		
 	def find_root(self, list):
 		for n in list:
@@ -78,13 +78,13 @@ class Convert:
 			str(ord)))
 		
 	def print_header(self):
-		print """@E utf-8
+		print("""@E utf-8
 @P form 
 @P lemma
 @P afun
 @P tag
 @N ord
-"""
+""")
 
 
 
@@ -102,8 +102,8 @@ class Dep2TrXML:
 			list = tree.nodes
 			list.remove(root)
 			self.print_node(list, root, 1)
-			print "</nd>"
-		print "</trees>"
+			print("</nd>")
+		print("</trees>")
 
 
 		
@@ -119,19 +119,19 @@ class Dep2TrXML:
 			if n.dep == node.ord:
 				self.print_node(list, n, depth+1)
 				has_child = True
-		print depth*"\t" + "</nd>"
+		print(depth*"\t" + "</nd>")
 
 
 
 	def print_nd_open(self, word, tag1, tag2, ord, depth):
-		print depth*"\t" + "<nd form='" + word  \
+		print(depth*"\t" + "<nd form='" + word  \
 				+ "' afun='" + tag1 \
 				+ "' tag='" + tag2 \
 				+ "' ord='" + str(ord)  \
-		     	+ "'>"
+		     	+ "'>")
 
 	def print_header(self):
-		print """		
+		print("""		
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE trees PUBLIC "-//CKL.MFF.UK//DTD TrXML V1.0//EN" "http://ufal.mff.cuni.cz/~pajas/tred.dtd" [
 <!ENTITY % trxml.attributes "  
@@ -163,7 +163,7 @@ class Dep2TrXML:
   <t n="afun"/>
   <t n="tag"/>
 </types>
-"""
+""")
 
 
 

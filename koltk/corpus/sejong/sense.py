@@ -152,7 +152,7 @@ class Sentence:
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         if self.idx >= len(self.wordlist):
             raise StopIteration
         word = self.wordlist[self.idx]
@@ -223,7 +223,7 @@ class Corpus:
 
         return curr_sentence
 
-    def next(self):
+    def __next__(self):
         return self.readsentence()
  
 
@@ -242,7 +242,7 @@ class Encode:
         self.stdout = stdout
         self.encoding = enc
     def write(self, s):
-        self.stdout.write(s.encode(self.encoding))
+        self.stdout.buffer.write(s.encode(self.encoding))
 
 class Test:
     def __init__(self, file):
@@ -253,23 +253,23 @@ class Test:
     def test_full(self, corpus, enc):
         sys.stdout = Encode(sys.stdout, enc)
         for sentence in corpus:
-            print "======================"
-            print sentence, sentence.form
+            print("======================")
+            print(sentence, sentence.form)
             for word in sentence.wordlist:
-                print word, word.gid, word, word.form
+                print(word, word.gid, word, word.form)
                 for morph in word.morphlist:
-                    print morph, morph.form, morph.pos
+                    print(morph, morph.form, morph.pos)
 
 
     def test(self, corpus, enc):
         sys.stdout = Encode(sys.stdout, enc)
         for sentence in corpus:
-            print "======================"
-            print sentence.gid, sentence.form
+            print("======================")
+            print(sentence.gid, sentence.form)
             for word in sentence.wordlist:
-                print word.ord, word.form
+                print(word.ord, word.form)
                 for morph in word.morphlist:
-                    print '\t', morph.form, morph.sem, morph.pos
+                    print('\t', morph.form, morph.sem, morph.pos)
 
 
 if __name__ == '__main__':

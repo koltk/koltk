@@ -75,8 +75,8 @@ import sys
 import re
 
 # intra-package references
-from morph import Morph
-from morph import Word
+from .morph import Morph
+from .morph import Word
 
 class TreeParseError(Exception):
 	def __init__(self, message):
@@ -96,7 +96,7 @@ class ForestWalker:
 	def __iter__(self):
 		return self
 
-	def next(self):
+	def __next__(self):
 		return self.readtree()
 
 	def readtree(self): 
@@ -116,7 +116,7 @@ class ForestWalker:
 			sentence_form = line[2:]
 			tree = Tree(id, Sentence(id, sentence_form, None))
 		else:
-			print "ERROR: no sentence form line"
+			print("ERROR: no sentence form line")
 			sys.exit(1) # ERROR: no sentence form line 
 
 
@@ -128,8 +128,8 @@ class ForestWalker:
 
 			try :
 				(path, number_of_parentheses) = self._parseline(line)
-			except TreeParseError, e:
-				print "TreeParseError: ", e.message
+			except(TreeParseError, e):
+				print("TreeParseError: ", e.message)
 
 			if tree.root is not None:
 				tree.move_up()
@@ -150,7 +150,7 @@ class ForestWalker:
 			tree.add_child_to_current_node( tnode )
 			tree.lexical_nodes.append(tnode)
 			
-			for i in xrange(0, number_of_parentheses ):
+			for i in range(0, number_of_parentheses ):
 				tree.move_up()
 			line = self._readline()
 			
@@ -385,8 +385,8 @@ class Node:
 			self.first_child.set_head(False)
 			self.second_child.set_head(True)
 		else :
-			print node.name
-			print "ERROR: more than 2 children"
+			print(node.name)
+			print("ERROR: more than 2 children")
 			sys.exit(0) # TreeError	: more than 2 children
 
 class TerminalNode (Node):
@@ -446,7 +446,7 @@ class Encode:
 		self.encoding = enc
 
 	def write(self, s):
-		self.stdout.write(s.encode(self.encoding))
+		self.stdout.buffer.write(s.encode(self.encoding))
 
 
 class Test:
@@ -459,13 +459,13 @@ class Test:
 		for tree in fw:
 			#print "================ beg"
 			#print "TREE_ID: ", tree.id
-			print tree.id, ";", tree.sentence.form
+			print(tree.id, ";", tree.sentence.form)
 			#print "ROOT_NODE: ", tree.root.name
 			for t in  tree.lexical_nodes:
 				#print reduce( lambda x, y :  x+" "+y, tree.get_path_to_node(t))
 				dep_parent_ord, dep_name = self.get_dep_parent_of_node(t)
-				print "%s\t%s\t%s\t%s\t%s\t%s" % (t.ord, dep_parent_ord, dep_name, t.parent.name, t.word, t.name)
-			print
+				print("%s\t%s\t%s\t%s\t%s\t%s" % (t.ord, dep_parent_ord, dep_name, t.parent.name, t.word, t.name))
+			print()
 			#print "================ end"
 
 	def get_dep_parent_of_node(self, node):

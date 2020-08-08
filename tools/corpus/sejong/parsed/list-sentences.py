@@ -11,7 +11,7 @@ $ list-sentences sejong-parsed.dep > morphs.list
 import codecs
 import sys
 import re
-from kltk.corpus.sejong.dep import ForestWalker
+from koltk.corpus.sejong.dep import ForestWalker
 
 class Encode:
     def __init__(self, stdout, enc):
@@ -19,7 +19,7 @@ class Encode:
         self.encoding = enc
 
     def write(self, s):
-        self.stdout.write(s.encode(self.encoding))
+        self.stdout.buffer.write(s.encode(self.encoding))
 
 class DoIt:
 	def __init__(self, file, output_encoding):
@@ -34,7 +34,7 @@ class DoIt:
 			for n in tree.nodes:
 				for m in n.word.morphs:
 					s = s + " " +  m.form + "/" + m.pos
-			print s
+			print(s)
 
 if __name__ == '__main__':
 	file = codecs.open(sys.argv[1], encoding='utf-8')

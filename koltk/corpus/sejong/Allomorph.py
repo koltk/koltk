@@ -25,14 +25,14 @@ class Allomorph :
 			}
 
 	def normalize(self, variant):
-		if self.normalized.has_key(variant):
+		if variant in self.normalized:
 			return self.normalized[variant]
 		else :
 			return variant
 	
 	def print_list(self):
 		for allo in self.normalized:
-			print allo, self.normalize(allo)
+			print(allo, self.normalize(allo))
 	
 
 
