@@ -69,24 +69,24 @@ class Word:
     def __init__(self, gid, ord, form, morph_string):
         self.gid = gid
         """
-        @type: string
+        :type: str
         """
         self.ord = ord
         """
-        @type: int
+        :type: int
         """
         self.form = form
         """
-        @type: string
+        :type: str
         """
         self.morph_string = morph_string
         """
-        @type: string
+        :type: str
         """
 
         self.morphlist =  []
         """
-        @type: list of L{Morph}
+        :type: list(koltk.corpus.sejgon.sense.Morph)
         """
         
         for morph_raw_str in morph_string.split(' + '):
@@ -105,11 +105,12 @@ class Morph:
    """
    Morphology: a morpheme with a sense tag and a pos tag.
 
-   -str  : raw string
-   -ord  : order in the word
-   -form :
-   -pos  :
-   -sem  : 00 for non-specified
+   str  : raw string
+   ord  : order in the word
+   form : form
+   pos  : pos
+   sem  : 00 for non-specified
+  
    """
 
    def __init__(self, morph_str):  

@@ -52,8 +52,8 @@ class ForestWalker:
 	"""
 	def __init__(self, file):
 		"""
-		@param file: Sejong Dependency Treebank file
-		@type file: file object
+		:param file: Sejong Dependency Treebank file
+		:type file: file object
 		"""
 		self.file = file
 	
@@ -62,7 +62,7 @@ class ForestWalker:
 	
 	def readtree(self):
 		"""
-		@rtype: L{Tree}
+		:rtype: koltk.corpus.sejong.dep.Tree
 		"""
 		# read sentence form line
 		line = self._readline()
@@ -82,7 +82,7 @@ class ForestWalker:
 	
 	def _parse_morph_string(self, morph_string):
 		"""
-		@rtype: list of L{Morph}
+		:rtype: list of L{Morph}
 		"""
 		morphs = []
 
@@ -108,8 +108,8 @@ class ForestWalker:
 
 	def _readline(self):
 		"""
-		@rtype: string or list
-		@return: a line of the treebank source or a list of fields
+		:rtype: string or list
+		:return: a line of the treebank source or a list of fields
 		"""
 		line = self.file.readline()
 
@@ -124,8 +124,7 @@ class ForestWalker:
 
 
 class TreeBank:
-	"""
-	TreeBank a list of L{Tree}. 
+	"""TreeBank a list of L{Tree}. 
 	"""
 	def __init__(self):
 		self.trees = []
@@ -135,7 +134,7 @@ class TreeBank:
 
 	def load(self, corpus):
 		"""
-		@parm corpus: dependency corpus file
+		:parm corpus: dependency corpus file
 		"""
 		table = []
 		for line in corpus:
@@ -168,28 +167,28 @@ class Tree:
 	def __init__(self, id, sentence_form):
 		self.id = id
 		"""
-		@type: string
+		:type: string
 		"""
 		self.sentence_form = sentence_form
 		"""
-		@type: string
+		:type: string
 		"""
 		self.nodes = []
 		"""
-		@type: list of L{Node}
+		:type: list of L{Node}
 		"""
 		self.root = None
 		"""
-		@type: L{Node}
+		:type: L{Node}
 		"""
 		self.terminals = []
 		"""
-		@type: list of L{Node}
+		:type: list of L{Node}
 		"""
 
 	def setWith(self, table):
 		"""
-		@rtype: L{Tree}
+		:rtype: L{Tree}
 		"""
 		# read sentence form line
 
@@ -212,7 +211,7 @@ class Tree:
 
 	def _parse_morph_string(self, morph_string):
 		"""
-		@rtype: list of L{Morph}
+		:rtype: list of L{Morph}
 		"""
 		morphs = []
 
@@ -240,16 +239,16 @@ class Tree:
 	
 	def set_root(self, node):
 		"""
-		@param node: node 
-		@type node: L{Node}
+		:param node: node 
+		:type node: L{Node}
 		"""
 		self.root = node
 	
 	def get_terminals(self):
 		"""
-		@rtype: list of L{Node}
-		@return: list of terminal nodes
-		@warning: Remember this is a dependency tree!
+		:rtype: list of L{Node}
+		:return: list of terminal nodes
+		:warning: Remember this is a dependency tree!
 		"""
 		if self.terminals :
 			pass
@@ -274,49 +273,49 @@ class Node:
 	"""
 	def __init__(self, ord, dep, tag1, tag2, word):
 		"""
-		@param ord: order in the sentence
-		@type ord: int
-		@param dep: order of the parent
-		@type dep: int
-		@param tag1: label
-		@type tag1: string
-		@param tag2: label
-		@type tag2: string
-		@param word: word
-		@type word: L{Word}
+		:param ord: order in the sentence
+		:type ord: int
+		:param dep: order of the parent
+		:type dep: int
+		:param tag1: label
+		:type tag1: string
+		:param tag2: label
+		:type tag2: string
+		:param word: word
+		:type word: L{Word}
 
 		"""
 		self.parent = None
 		"""parent node
-		@type: L{Node}
+		:type: L{Node}
 		"""
 		self.children = []
 		"""list of child nodes
-		@type: list of L{Node}s
+		:type: list of L{Node}s
 		"""
 		self.ord = ord
 		"""
-		@type: int
+		:type: int
 		"""
 		self.dep = dep
 		"""ord of parent node
-		@type: int
+		:type: int
 		"""
 		self.tag1 = tag1
 		"""
-		@type: string
+		:type: string
 		"""
 		self.tag2 = tag2
 		"""
-		@type: string
+		:type: string
 		"""
 		self.form = word.form
 		"""
-		@type: string
+		:type: string
 		"""
 		self.word = word
 		"""
-		@type: L{Word}
+		:type: L{Word}
 		"""
 	
 	def add_a_child(self, node):

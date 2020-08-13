@@ -101,7 +101,7 @@ class ForestWalker:
 
 	def readtree(self): 
 		"""
-		@rtype: L{Tree}
+		:rtype: L{Tree}
 		"""
 		# INITIALIZE
 		self.number_of_trees += 1
@@ -158,9 +158,9 @@ class ForestWalker:
 
 	def _parse_morph_string(self, morph_string):	
 		"""
-		@param morph_string: raw morphology string
-		@type morph_string: string
-		@rtype: list of L{Morph}s
+		:param morph_string: raw morphology string
+		:type morph_string: string
+		:rtype: list of L{Morph}s
 		"""
 		morphs = []
 
@@ -186,10 +186,10 @@ class ForestWalker:
 
 	def _parseline(self, line):
 		""" 
-		@param line: a source line from the treebank file
-		@type line: string
-		@rtype: list
-		@return: path_to_terminal
+		:param line: a source line from the treebank file
+		:type line: string
+		:rtype: list
+		:return: path_to_terminal
 
 		get a tree source line and return path_to_terminal.
 		path_to_terminal corresponds to one line of TreeBank file.
@@ -234,8 +234,8 @@ class ForestWalker:
 
 	def _readline(self):
 		"""
-		@rtype: string
-		@return: a line of treebank source
+		:rtype: string
+		:return: a line of treebank source
 		"""
 		line = self.file.readline()
 
@@ -255,7 +255,7 @@ class ForestWalker:
 
 class TreeBank:
 	"""
-	@status: Not yet implemented
+	:status: Not yet implemented
 	"""
 	def __init__(self):
 		pass
@@ -266,10 +266,10 @@ class Tree:
 	"""
 	def __init__(self, id, sentence):
 		"""
-		@param id: sentence id
-		@type id: string
-		@param sentence: sentence
-		@type sentence: L{Sentence}
+		:param id: sentence id
+		:type id: string
+		:param sentence: sentence
+		:type sentence: L{Sentence}
 		"""
 		self.id = id
 		self.sentence = sentence
@@ -282,15 +282,15 @@ class Tree:
 
 	def get_path_to_current_node(self):
 		"""
-		@rtype: list of L{Node}
+		:rtype: list of L{Node}
 		"""
 		return self.get_path_to_node(self.current_node)
 	
 	def get_path_to_node(self, node):
 		"""
-		@param node: node
-		@type node: L{Node}
-		@rtype: list of L{Node}
+		:param node: node
+		:type node: L{Node}
+		:rtype: list of L{Node}
 		"""
 		p = []
 		n = node
@@ -303,16 +303,16 @@ class Tree:
 
 	def set_root(self, node):
 		"""
-		@param node: root node
-		@type node: L{Node}
+		:param node: root node
+		:type node: L{Node}
 		"""
 		self.root = node
 		self.root.set_head(True)
 
 	def add_child_to_current_node(self, node):
 		"""
-		@param node: child node
-		@type node: L{Node}
+		:param node: child node
+		:type node: L{Node}
 		"""
 		if self.root is None:
 			self.set_root(node)
@@ -323,17 +323,17 @@ class Tree:
 
 	def add_child_to_node(self, node, child):
 		"""
-		@param node: node
-		@type node: L{Node}
-		@param node: child node
-		@type child: L{Node}
+		:param node: node
+		:type node: L{Node}
+		:param node: child node
+		:type child: L{Node}
 		"""
 		node.add_child(child)
 	
 	def set_current_node (self, node):
 		"""
-		@param node: node
-		@type node: L{Node}
+		:param node: node
+		:type node: L{Node}
 		"""
 		self.current_node = node
 	
@@ -343,10 +343,10 @@ class Tree:
 class Node:
 	def __init__(self, parent, name):
 		"""
-		@param parent: parent node
-		@type parent: L{Node}
-		@param name: node name
-		@type name: string
+		:param parent: parent node
+		:type parent: L{Node}
+		:param name: node name
+		:type name: string
 		"""
 		self.name = name
 		self.parent = parent
@@ -356,7 +356,7 @@ class Node:
 	
 	def is_head(self):
 		"""
-		@rtype: boolean
+		:rtype: boolean
 		"""
 		return self.head_flag
 	
@@ -365,15 +365,15 @@ class Node:
 	
 	def set_parent(self, node):
 		"""
-		@param node: parent node
-		@type node: L{Node}
+		:param node: parent node
+		:type node: L{Node}
 		"""
 		self.parent = node
 
 	def add_child(self, node):
 		"""
-		@param node: child node
-		@type node: L{Node}
+		:param node: child node
+		:type node: L{Node}
 		"""
 		if self.first_child is None:
 			node.set_parent(self)
@@ -392,14 +392,14 @@ class Node:
 class TerminalNode (Node):
 	def __init__(self, ord, parent, morph_string, word):
 		"""
-		@param	ord:		ord in the sentence
-		@type	ord:		int
-		@param	parent:		parent node
-		@type	parent:		L{Node}
-		@param	morph_string: morphology string
-		@type	morph_string: string
-		@param	word:		word
-		@type	word:		L{Word}
+		:param	ord:		ord in the sentence
+		:type	ord:		int
+		:param	parent:		parent node
+		:type	parent:		L{Node}
+		:param	morph_string: morphology string
+		:type	morph_string: string
+		:param	word:		word
+		:type	word:		L{Word}
 		"""
 		self.ord = ord
 		self.name = word.form
@@ -414,12 +414,12 @@ class TerminalNode (Node):
 class Sentence:
 	def __init__(self, id, form, words):
 		"""
-		@param id: sentence id
-		@type id: string
-		@param form: sentence form
-		@type form: string
-		@param words: list of words
-		@type words: list of L{Word}
+		:param id: sentence id
+		:type id: string
+		:param form: sentence form
+		:type form: string
+		:param words: list of words
+		:type words: list of L{Word}
 		"""
 		self.id = id
 		self.form = form

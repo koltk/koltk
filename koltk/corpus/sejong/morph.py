@@ -5,7 +5,7 @@
 """ 
 Sejong Morphology Tagged Corpus Reader.
 
-@status: Not yet fully implemented
+:status: Not yet fully implemented
 """
 
 
@@ -22,44 +22,44 @@ class Word:
 	"""
 	def __init__(self, ord, form, morphs, morph_string):
 		"""
-		@param ord: order in the sentence
-		@type ord: int
-		@param form: word form
-		@type form: string
-		@param morphs: list of morphs
-		@type morphs: list of L{Morph}s
-		@param morph_string: raw morphology string
-		@type morph_string: string
+		:param ord: order in the sentence
+		:type ord: int
+		:param form: word form
+		:type form: string
+		:param morphs: list of morphs
+		:type morphs: list of L{Morph}s
+		:param morph_string: raw morphology string
+		:type morph_string: string
 		"""
 		self.ord = ord
 		"""
-		@type: int
+		:type: int
 		"""
 		self.form = form
 		"""
-		@type: string
+		:type: string
 		"""
 		self.morphs = morphs
 		"""
-		@type: list of L{Morph}s
+		:type: list of L{Morph}s
 		"""
 		self.morph_string = morph_string
 		"""
-		@type: string
+		:type: string
 		"""
 	
 	def add_morph(self, morph):
 		"""
-		@param morph: a morpheme
-		@type morph: L{Morph}
+		:param morph: a morpheme
+		:type morph: L{Morph}
 		"""
 		self.morphs.append(morph)
 
 	def has_pos(self, pos):
 		"""
-		@param pos: part of speech tag 
-		@type pos: string
-		@rtype: boolean
+		:param pos: part of speech tag 
+		:type pos: string
+		:rtype: boolean
 		"""
 		for m in self.morphs:
 			if m.pos == pos :
@@ -85,18 +85,18 @@ class Morph:
 	"""
 	def __init__(self, form, pos):
 		"""
-		@param form: morphology form
-		@type form: string
-		@param pos: part of speech tag
-		@type pos: string
+		:param form: morphology form
+		:type form: string
+		:param pos: part of speech tag
+		:type pos: string
 		"""
 		self.form = form
 		"""
-		@type: string
+		:type: string
 		"""
 		self.pos = pos
 		"""part of speech tag
-		@type: string
+		:type: string
 		"""
 
 
