@@ -5,12 +5,11 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name="koltk", 
-    version="0.0.1",
+    version="0.1.0",
     author="",
     author_email="",
     description="Korean Language Toolkit",
-    long_description=long_description,
-    long_description_content_type="text/plain",
+    long_description="README.rst",
     url="https://github.com/koltk/koltk",
     packages=setuptools.find_packages(),
     classifiers=[
