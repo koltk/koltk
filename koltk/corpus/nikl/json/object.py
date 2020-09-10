@@ -8,31 +8,31 @@ import re
 
 class CorpusMetadata(NIKLJSON):
     def __init__(self, iterable=(), **extra):
-        self.title = ''
-        self.creator = ''
-        self.distributor = ''
-        self.year = ''
-        self.category = ''
+        self.title = None
+        self.creator = None
+        self.distributor = None
+        self.year = None
+        self.category = None
         self.annotation_level = []
-        self.sampling = ''
+        self.sampling = None
         
         super().__init__(iterable)
         self.update(extra)
     
 class Corpus(NIKLJSON):
-    def __init__(self, id='', metadata=CorpusMetadata(), document=[]):
+    def __init__(self, id=None, metadata=CorpusMetadata(), document=[]):
         self.id = id
         self.metadata = metadata
         self.document = document 
 
 class DocumentMetadata(NIKLJSON):
     def __init__(self, iterable=(), **extra):
-        self.title = ''
-        self.author = ''
-        self.publisher = ''
-        self.date = ''
-        self.topic = ''
-        self.url = ''
+        self.title = None
+        self.author = None
+        self.publisher = None
+        self.date = None
+        self.topic = None
+        self.url = None
         
         super().__init__(iterable)
         self.update(extra)
@@ -60,7 +60,7 @@ class Document(NIKLJSON):
         }
        
     """
-    def __init__(self, id='', metadata=DocumentMetadata(), sentence=[]):
+    def __init__(self, id=None, metadata=DocumentMetadata(), sentence=[]):
         self.id = id
         self.metadata = metadata
         self.sentence = sentence

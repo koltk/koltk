@@ -2,7 +2,10 @@
 from koltk.corpus.nikl.json import 
 """
 
-import json
+try: 
+    import simplejson as json
+except ImportError:
+    import json
 
 class NIKLJSON(dict):
     """
@@ -16,7 +19,7 @@ class NIKLJSON(dict):
         super().__init__(iterable)
         self.update(extra)
 
-    def __repr(self):
+    def __repr__(self):
         return json.dumps(self, ensure_ascii=False)
 
     def __str__(self):
@@ -34,4 +37,6 @@ class NIKLJSON(dict):
     def __delattr__(self, name):
         del self[name]
 
-    
+    @classmethod
+    def decode(s):
+        return self(json.loads(s))
