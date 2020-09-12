@@ -40,3 +40,21 @@ class NIKLJSON(dict):
     @classmethod
     def decode(s):
         return self(json.loads(s))
+
+
+ 
+class NiklsonList(list):
+     def __init__(self, xlist):
+        if type(xlist) is type(self):
+            # TODO: implement clone
+            raise Exception('not yet implemented!')
+        elif type(xlist) is list:
+            self.__init_from_json(xlist)
+
+    
+    
+    
+
+
+    
+    

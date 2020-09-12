@@ -49,5 +49,6 @@ r"""NIKLJSON
 
 
 """
+
 from .object import *
-from .base import NIKLJSON
+from .base import * 
