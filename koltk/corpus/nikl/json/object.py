@@ -405,6 +405,16 @@ class NE(NIKLJSON):
         # self.begin = begin
         # self.end = end
 
+    @property
+    def slice_str(self):
+        return '{}:{}'.format(self.begin, self.end)
+
+    @property
+    def slice(self):
+        return slice(self.begin, self.end)
+
+    def __str__(self):
+        return '{}/{}'.format(self.form, self.label)
 
 class DPList(list):
     def __init__(self, dp_list):
