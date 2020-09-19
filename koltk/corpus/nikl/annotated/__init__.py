@@ -1,4 +1,12 @@
-r"""NIKLJSON
+r"""NIKL Annotated Corpus with 7 layers
+
+- MP: Morphology (형태)
+- LS: Lexical Semantics (어휘 의미)
+- NE: Named Entity (개체명)
+- DP: Dependency Parsing (구문분석)
+- SR: Semantic Role (의미역)
+- ZA: Zero Anaphora (무형대용어)
+- CR: Cross Reference (상호참조)
 
 
 ::
@@ -52,3 +60,4 @@ r"""NIKLJSON
 
 from .object import *
 from .base import * 
+from .reader import *
