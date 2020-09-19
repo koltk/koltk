@@ -21,11 +21,46 @@ class CorpusMetadata(NIKLJSON):
         super().__init__(iterable)
         self.update(extra)
     
-class Corpus(NIKLJSON):
-    def __init__(self, id=None, metadata=CorpusMetadata(), document=[]):
-        self.id = id
-        self.metadata = metadata
-        self.document = document
+class Corpus:
+    def __init__(self, corpus):
+        if type(corpus) is Corpus:
+            # TODO: implement clone
+            raise Exception('not yet implemented!')
+        elif type(corpus) is dict:
+            self.__init_from_json(corpus)
+            
+    def __init_from_json(self, corpus):
+        self.__json = corpus
+        self.id = corpus['id']
+        self.metadata = CorpusMetadata(corpus['metadata'])
+        self.__document_list = None 
+
+    @property
+    def document_list(self):
+        if self.__document_list is None:
+            self.__document_list = DocumentList(self.__json['document'])
+
+        return self.__document_list
+
+    def __repr__(self):
+        return 'Corpus(id={})'.format(self.id)
+
+
+class DocumentList(list):
+    def __init__(self, document_list):
+        if type(document_list) is DocumentList:
+            # TODO: implement clone
+            raise Exception('not yet implemented!')
+        elif type(document_list) is list:
+            self.__init_from_json(document_list)
+
+    def __init_from_json(self, document_list):
+        self.__json = document_list
+
+        for doc in document_list:
+            list.append(self, Document(doc))
+                    
+
 
 class DocumentMetadata(NIKLJSON):
     def __init__(self, iterable=(), **extra):
@@ -88,6 +123,9 @@ class Document:
         return self.__sentence_list
         
     def __repr__(self):
+        return 'Document(id={})'.format(self.id)
+    
+    def __str__(self):
         return json.dumps(self.__json, ensure_ascii=False)
     
 class SentenceList(list):
