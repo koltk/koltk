@@ -7,24 +7,27 @@ try:
 except ImportError:
     import json
 
-class NIKLJSON(dict):
+class Niklanson(dict):
     """
-    NIKLJSON object.
+    NIKL Annotated Corpus JSON 
     """ 
 
-    def __init__(self, iterable=(), **extra):
-        """
-        :return: a NIKLJSON object
-        """
-        super().__init__(iterable)
-        self.update(extra)
+    @classmethod
+    def from_dict(cls, dic):
+        if type(dic) is not dict:
+            raise ValueError
 
-    def __repr__(self):
+        return cls(**dic)
+
+    @classmethod
+    def from_json(cls, json_str):
+        return cls(**json.loads(json_str))
+
+    def json(self):
         return json.dumps(self, ensure_ascii=False)
 
-    def __str__(self):
-        return json.dumps(self, ensure_ascii=False, indent=2)
-    
+
+
     def __getattr__(self, name):
         try:
             return self[name]
@@ -37,13 +40,7 @@ class NIKLJSON(dict):
     def __delattr__(self, name):
         del self[name]
 
-    @classmethod
-    def decode(s):
-        return self(json.loads(s))
-
-
- 
-class NiklsonList(list):
+class NiklansonList(list):
      def __init__(self, xlist):
         if type(xlist) is type(self):
             # TODO: implement clone

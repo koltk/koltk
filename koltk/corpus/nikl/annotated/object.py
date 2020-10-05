@@ -1,14 +1,34 @@
-r"""NIKLJSON Objects
+r"""NIKL ANnotated Corpus JSON (Niklanson) Objects
+
+.. code-block::
+
+  Corpus
+    CorpusMetadata
+    DocumentList
+      Document
+        DocumentMetadata
+        SentenceList
+          Sentence
+            WordList, Word
+            MorphemeList, Morpheme
+            WSDList, WSD
+            NEList, NE
+            DPList, DP
+            SRLList, SR
+        ZAList, ZA
+        CRList, CR
+
+
 
 """
 
 
 from __future__ import annotations
-from .base import NIKLJSON
+from .base import Niklanson
 import re
 import json
 
-class CorpusMetadata(NIKLJSON):
+class CorpusMetadata(Niklanson):
     def __init__(self, iterable=(), **extra):
         self.title = None
         self.creator = None
@@ -22,21 +42,70 @@ class CorpusMetadata(NIKLJSON):
         self.update(extra)
     
 class Corpus:
-    def __init__(self, corpus):
-        if type(corpus) is Corpus:
-            # TODO: implement clone
-            raise Exception('not yet implemented!')
-        elif type(corpus) is dict:
-            self.__init_from_json(corpus)
-            
-    def __init_from_json(self, corpus):
-        self.__json = corpus
+    """Corpus: the top level object.
+
+    - id
+    - :class:`.CorpusMetadata`
+    - :class:`.DocumentList`
+
+    JSON:
+    
+    .. code-block:: json
+      
+      {
+        "id" : "",
+        "metadata" : {},
+        "document" : []
+      }
+    
+    Args:
+        corpus (Corpus) : corpus
+    
+
+    Example:
+    
+    .. code-block:: python
+
+        Corpus({ "id" : "", "metadata" : {}, "document" : [] })
+        Corpus(id='', metadata=None, document=[])
+
+    """
+    def __init__(self, *args, **kwargs):
+        if args == [] and kwargs == {}:
+            self.__init_empty()
+        elif len(args) == 1 and kwargs == {}:
+            corpus = args[0]
+            if type(corpus) is Corpus:
+                # TODO: implement clone
+                raise NotImplementedError 
+            elif type(corpus) is dict:
+                self.__init_from_dict(corpus)
+            else:
+                raise TypeError
+        elif args == [] and len(kwargs) > 0:
+            self__init_from_kwargs(kwargs)
+
+    def __init_empty(self):
+        self.id = ''
+        self.metadata = None
+        self.__document_list = []
+        
+    def __init_from_dict(self, corpus):
+        #self.__json = corpus
         self.id = corpus['id']
         self.metadata = CorpusMetadata(corpus['metadata'])
-        self.__document_list = None 
+        self.__document_list = DocumentList(corpus['document'])
+
+    def __init_from_kwargs(self, kwargs):
+        self.id = kwargs['id']
+        self.metadata = kwargs['metadata']
+        self.__document_list = kwargs['document']
+        
 
     @property
     def document_list(self):
+        """ :class:`.DocumentList`
+        """
         if self.__document_list is None:
             self.__document_list = DocumentList(self.__json['document'])
 
@@ -50,7 +119,7 @@ class DocumentList(list):
     def __init__(self, document_list):
         if type(document_list) is DocumentList:
             # TODO: implement clone
-            raise Exception('not yet implemented!')
+            raise NotImplementedError
         elif type(document_list) is list:
             self.__init_from_json(document_list)
 
@@ -62,7 +131,7 @@ class DocumentList(list):
                     
 
 
-class DocumentMetadata(NIKLJSON):
+class DocumentMetadata(Niklanson):
     def __init__(self, iterable=(), **extra):
         self.title = None
         self.author = None
@@ -103,7 +172,7 @@ class Document:
     def __init__(self, document):
         if type(document) is Document:
             # TODO: implement clone
-            raise Exception('not yet implemented!')
+            raise NotImplementedError
         elif type(document) is dict:
            self.__init_from_json(document) 
 
@@ -132,7 +201,7 @@ class SentenceList(list):
     def __init__(self, sentence_list):
         if type(sentence_list) is SentenceList:
             # TODO: implement clone
-            raise Exception('not yet implemented!')
+            raise NotImplementedError
         elif type(sentence_list) is list:
             self.__init_from_json(sentence_list)
 
@@ -180,7 +249,7 @@ class Sentence:
     def __init__(self, sentence):
         if type(sentence) is Sentence:
             # TODO: implement clone
-            raise Exception('not yet implemented!')
+            raise NotImplementedError
         elif type(sentence) is dict:
            self.__init_from_json(sentence)
 
@@ -286,7 +355,7 @@ class WordList(list):
     def __init__(self, word_list):
         if type(word_list) is WordList:
             # TODO: implement clone
-            raise Exception('not yet implemented!')
+            raise NotImplementedError
         elif type(word_list) is list:
             self.__init_from_json(word_list)
 
@@ -299,7 +368,7 @@ class WordList(list):
         
     
         
-class Word(NIKLJSON):
+class Word(Niklanson):
     """
     Word
     """
@@ -307,7 +376,7 @@ class Word(NIKLJSON):
     def __init__(self, word):
         if type(word) is Word:
             # TODO: implement clone
-            raise Exception('not yet implemented!')
+            raise NotImplementedError
         elif type(word) is dict:
             self.__init_from_json(word)
             
@@ -327,7 +396,7 @@ class MorphemeList(list):
     def __init__(self, morpheme_list):
         if type(morpheme_list) is MorphemeList:
             # TODO: implement clone
-            raise Exception('not yet implemented!')
+            raise NotImplementedError
         elif type(morpheme_list) is list:
             self.__init_from_json(morpheme_list)
 
@@ -335,38 +404,42 @@ class MorphemeList(list):
         self.__json = morpheme_list
         
         for w in morpheme_list:
-            list.append(self, Morpheme(w))
+            list.append(self, Morpheme.from_dict(w))
             
  
-class Morpheme(NIKLJSON):
+class Morpheme(Niklanson):
+    """Morpheme
     """
-    Morpheme
-    """
-    #def __init__(self, id: int, form: str, label: str, word_id: int, position: int):
-    def __init__(self, morpheme):
-        if type(morpheme) is Morpheme:
-            pass
-        elif type(morpheme) is dict:
-            self.__init_from_json(morpheme)
+    def __init__(self,
+                 id : int = None,
+                 form: str = None,
+                 label : str = None,
+                 word_id : int = None,
+                 position : int = None):
+        self.id = id
+        self.form = form
+        self.label = label
+        self.word_id = word_id
+        self.position = position
+        self.__str = None
 
-            
-    def __init_from_json(self, morpheme):
-        super().update(morpheme)
-        # self.id = id
-        # self.form = form
-        # self.label = label
-        # self.word_id = word_id
-        # self.position = position
+    @classmethod
+    def strict(cls, id, form, label, word_id, position):
+        return cls(id, form, label, word_id, position)
 
+    @property
+    def str(self):
+        if self.__str is None:
+            self.__str = self.form + '/' + self.label
 
-    def __str__(self):
-        return self.form + '/' + self.label
+        return self.__str
+
 
 class WSDList(list):
     def __init__(self, wsd_list):
         if type(wsd_list) is WSDList:
             # TODO: implement clone
-            raise Exception('not yet implemented!')
+            raise NotImplementedError
         elif type(wsd_list) is list:
             self.__init_from_json(wsd_list)
 
@@ -376,7 +449,7 @@ class WSDList(list):
         for w in wsd_list:
             list.append(self, WSD(w))
  
-class WSD(NIKLJSON):
+class WSD(Niklanson):
     """
     WSD (Word Sense Disambiguation)
     """
@@ -412,7 +485,7 @@ class NEList(list):
     def __init__(self, ne_list):
         if type(ne_list) is NEList:
             # TODO: implement clone
-            raise Exception('not yet implemented!')
+            raise NotImplementedError
         elif type(ne_list) is list:
             self.__init_from_json(ne_list)
 
@@ -422,7 +495,7 @@ class NEList(list):
         for w in ne_list:
             list.append(self, NE(w))
  
-class NE(NIKLJSON):
+class NE(Niklanson):
     """
     NE (Named Entity)
     """
@@ -458,7 +531,7 @@ class DPList(list):
     def __init__(self, dp_list):
         if type(dp_list) is DPList:
             # TODO: implement clone
-            raise Exception('not yet implemented!')
+            raise NotImplementedError
         elif type(dp_list) is list:
             self.__init_from_json(dp_list)
 
@@ -469,7 +542,7 @@ class DPList(list):
             list.append(self, DP(w))
  
 
-class DP(NIKLJSON):
+class DP(Niklanson):
     """
     DP (Denpendency Parsing)
     """
@@ -494,7 +567,7 @@ class SRLList(list):
     def __init__(self, srl_list):
         if type(srl_list) is SRLList:
             # TODO: implement clone
-            raise Exception('not yet implemented!')
+            raise NotImplementedError
         elif type(srl_list) is list:
             self.__init_from_json(srl_list)
 
@@ -504,7 +577,7 @@ class SRLList(list):
         for srl in srl_list:
             list.append(self, SRL(srl))
         
-class SRLPredicate(NIKLJSON):
+class SRLPredicate(Niklanson):
     def __init__(self, form: str, begin: int, end: int, lemma: str, sense_id: int):
         self.form = form
         self.begin = begin
@@ -512,14 +585,14 @@ class SRLPredicate(NIKLJSON):
         self.lemma = lemma
         self.sense_id = sense_id
 
-class SRLArgument(NIKLJSON):
+class SRLArgument(Niklanson):
     def __init__(self, form: str, label: str, begin: int, end: int):
         self.form = form
         self.label = label
         self.begin = begin
         self.end = end
 
-class SRL(NIKLJSON):
+class SRL(Niklanson):
     """
     SRL (Semantic Role Labeling)
     
@@ -540,7 +613,7 @@ class CRList(list):
     def __init__(self, cr_list):
         if type(cr_list) is crList:
             # TODO: implement clone
-            raise Exception('not yet implemented!')
+            raise NotImplementedError
         elif type(cr_list) is list:
             self.__init_from_json(cr_list)
 
@@ -551,7 +624,7 @@ class CRList(list):
             list.append(self, CR(cr))
   
 
-class CRMention(NIKLJSON):
+class CRMention(Niklanson):
     def __init__(self, form : str, NE_id : int, sentence_id : int, begin : int, end : int):
         self.form = form
         self.NE_id = NE_id
@@ -559,7 +632,7 @@ class CRMention(NIKLJSON):
         self.begin = begin
         self.end = end
 
-class CR(NIKLJSON):
+class CR(Niklanson):
     """
     CR (Cross Reference)
     """
@@ -572,7 +645,7 @@ class ZAList(list):
     def __init__(self, za_list):
         if type(za_list) is ZAList:
             # TODO: implement clone
-            raise Exception('not yet implemented!')
+            raise NotImplementedError
         elif type(za_list) is list:
             self.__init_from_json(za_list)
 
@@ -583,14 +656,14 @@ class ZAList(list):
             list.append(self, ZA(w))
  
 
-class ZAPredicate(NIKLJSON):
+class ZAPredicate(Niklanson):
     def __init__(self, form: str, sentence_id: int, begin: int, end: int):
         self.form = form
         self.sentence_id = sentence_id
         self.begin = begin
         self.end = end
 
-class ZAAntecedent(NIKLJSON):
+class ZAAntecedent(Niklanson):
     def __init__(self, type: str, form: str, sentence_id: int, begin: int, end: int):
         self.type = type
         self.form = form
@@ -598,7 +671,7 @@ class ZAAntecedent(NIKLJSON):
         self.begin = begin
         self.end = end
         
-class ZA(NIKLJSON):
+class ZA(Niklanson):
     def __init__(self, predicate: ZAPredicate, antecedent: list(ZAAntecedent)):
        self.predicate = predicate
        self.antecedent = antecedent
