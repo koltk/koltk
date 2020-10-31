@@ -11,7 +11,6 @@ class Niklanson(dict):
     """
     NIKL Annotated Corpus JSON 
     """ 
-
     @classmethod
     def from_dict(cls, dic):
         if type(dic) is not dict:
@@ -41,13 +40,16 @@ class Niklanson(dict):
         del self[name]
 
 class NiklansonList(list):
-     def __init__(self, xlist):
+    def __init__(self, xlist):
         if type(xlist) is type(self):
             # TODO: implement clone
-            raise Exception('not yet implemented!')
+            raise NotImplementedError
         elif type(xlist) is list:
-            self.__init_from_json(xlist)
-
+            self.__init_from_list(xlist)
+            
+    def __init_from_list(self, xlist):
+        for x in xlist:
+            list.append(self, self.element_type.from_dict(x))
     
     
     

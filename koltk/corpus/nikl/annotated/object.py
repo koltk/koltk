@@ -24,7 +24,7 @@ r"""NIKL ANnotated Corpus JSON (Niklanson) Objects
 
 
 from __future__ import annotations
-from .base import Niklanson
+from .base import Niklanson, NiklansonList
 import re
 import json
 
@@ -191,6 +191,20 @@ class Document:
 
         return self.__sentence_list
         
+    @property
+    def za_list(self):
+        if self.__za_list is None:
+            self.__za_list = ZAList(self.__json['ZA'])
+            
+        return self.__za_list
+  
+    @property
+    def cr_list(self):
+        if self.__cr_list is None:
+            self.__cr_list = CRList(self.__json['CR'])
+            
+        return self.__cr_list
+  
     def __repr__(self):
         return 'Document(id={})'.format(self.id)
     
@@ -306,21 +320,6 @@ class Sentence:
             
         return self.__srl_list
   
-    @property
-    def za_list(self):
-        if self.__za_list is None:
-            self.__za_list = ZAList(self.__json['ZA'])
-            
-        return self.__za_list
-  
-    @property
-    def cr_list(self):
-        if self.__cr_list is None:
-            self.__cr_list = CRList(self.__json['CR'])
-            
-        return self.__cr_list
-  
-
     def __init_word_list_from_sentence_form(self):
         self.__word_list = []
         beg = 0
@@ -351,20 +350,6 @@ class Sentence:
         return json.dumps(self.__json, ensure_ascii=False)
         
 
-class WordList(list):
-    def __init__(self, word_list):
-        if type(word_list) is WordList:
-            # TODO: implement clone
-            raise NotImplementedError
-        elif type(word_list) is list:
-            self.__init_from_json(word_list)
-
-    def __init_from_json(self, word_list):
-        self.__json = word_list
-        
-        for w in word_list:
-            list.append(self, Word(w))
-            
         
     
         
@@ -372,16 +357,21 @@ class Word(Niklanson):
     """
     Word
     """
-    #def __init__(self, id : int, form : str, begin : int, end : int):
-    def __init__(self, word):
-        if type(word) is Word:
-            # TODO: implement clone
-            raise NotImplementedError
-        elif type(word) is dict:
-            self.__init_from_json(word)
-            
-    def __init_from_json(self, word):
-        super().__init__(word)
+    def __init__(self,
+                 id : int = None,
+                 form : str = None,
+                 begin : int = None,
+                 end : int = None,
+                 **kwargs):
+        self.id = id
+        self.form = form
+        self.begin = begin
+        self.end = end
+        self.update(kwargs)
+
+    @classmethod
+    def strict(cls, id: int, form: str, begin: int, end: int):
+        return cls(id, form, begin, end)
 
     @property
     def slice(self):
@@ -391,8 +381,11 @@ class Word(Niklanson):
     def slice_str(self):
        return '{}:{}'.format(self.begin, self.end) 
 
+class WordList(NiklansonList):
+    element_type = Word
 
-class MorphemeList(list):
+   
+class MorphemeList(NiklansonList):
     def __init__(self, morpheme_list):
         if type(morpheme_list) is MorphemeList:
             # TODO: implement clone
@@ -415,12 +408,14 @@ class Morpheme(Niklanson):
                  form: str = None,
                  label : str = None,
                  word_id : int = None,
-                 position : int = None):
+                 position : int = None,
+                 **kwargs):
         self.id = id
         self.form = form
         self.label = label
         self.word_id = word_id
         self.position = position
+        self.update(kwargs)
         self.__str = None
 
     @classmethod
@@ -562,35 +557,66 @@ class DP(Niklanson):
         # self.head = head
         # self.label = label
         # self.dependent = dependent
-    
-class SRLList(list):
-    def __init__(self, srl_list):
-        if type(srl_list) is SRLList:
-            # TODO: implement clone
-            raise NotImplementedError
-        elif type(srl_list) is list:
-            self.__init_from_json(srl_list)
-
-    def __init_from_json(self, srl_list):
-        self.__json = srl_list
-        
-        for srl in srl_list:
-            list.append(self, SRL(srl))
-        
+       
 class SRLPredicate(Niklanson):
-    def __init__(self, form: str, begin: int, end: int, lemma: str, sense_id: int):
+    def __init__(self,
+                 form: str = None,
+                 begin: int = None,
+                 end: int = None,
+                 lemma: str = None,
+                 sense_id: int = None,
+                 **kwargs):
         self.form = form
         self.begin = begin
         self.end = end
         self.lemma = lemma
         self.sense_id = sense_id
+        self.update(kwargs)
+
+    @classmethod
+    def strict(cls, form: str, begin: int, end: int, lemma: str, sense_id: int):
+        return cls(form, begin, end, lemma, sense_id) 
+
+    @property
+    def slice(self):
+        return slice(self.begin, self.end)
+
+    @property
+    def slice_str(self):
+        return '{}:{}'.format(self.begin, self.end)
+
+    def __str__(self):
+        return '{}__{}'.format(self.lemma, self.sense_id)
 
 class SRLArgument(Niklanson):
-    def __init__(self, form: str, label: str, begin: int, end: int):
+
+    def __init__(self,
+                 form: str = None,
+                 label: str = None,
+                 begin: int = None,
+                 end: int = None,
+                 **kwargs):
         self.form = form
         self.label = label
         self.begin = begin
         self.end = end
+        self.update(kwargs)
+
+    @classmethod
+    def strict(cls, form: str, label: str, begin: int, end: int):
+        return cls(form, label, begin, end)
+
+    @property
+    def slice(self):
+        return slice(self.begin, self.end)
+
+    @property
+    def slice_str(self):
+        return '{}:{}'.format(self.begin, self.end)
+
+
+class SRLArgumentList(NiklansonList):
+    element_type = SRLArgument
 
 class SRL(Niklanson):
     """
@@ -598,20 +624,29 @@ class SRL(Niklanson):
     
     consists of a predicate and a list of arguments::
     
-        >>> SRL(SRLPredicate(), [SRLArgument()])
+        >>> SRL()
+        >>> SRL(predicate={}, argument=[{}, {}])
     """
-    def __init__(self, predicate: SRLPredicate, argument: []):
-        """
-        :param argument: list(SRLArgument)
+    def __init__(self,
+                 predicate: {} = {},
+                 argument: [] = [],
+                 **kwargs):
+        self.predicate = SRLPredicate(**predicate)
+        self.argument_list = SRLArgumentList(argument)
+        self.update(kwargs)
         
-        ``argument`` is a list of Argument.
+    @classmethod
+    def strict(cls, predicate: {}, argument: []):
         """
-        self.predicate = predicate
-        self.argument = argument
+        """
+        return cls(predicate, argument)
+    
+class SRLList(NiklansonList):
+    element_type = SRL
 
 class CRList(list):
     def __init__(self, cr_list):
-        if type(cr_list) is crList:
+        if type(cr_list) is CRList:
             # TODO: implement clone
             raise NotImplementedError
         elif type(cr_list) is list:
