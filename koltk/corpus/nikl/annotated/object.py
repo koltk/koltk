@@ -272,6 +272,7 @@ class Sentence:
         self.id = sentence['id']
         self.form = sentence['form']
         self.__word_list = None 
+        self.__charind2wordid = None
         self.__morpheme_list = None
         self.__wsd_list = None
         self.__ne_list = None
@@ -350,8 +351,13 @@ class Sentence:
         return json.dumps(self.__json, ensure_ascii=False)
         
 
-        
-    
+    def wordAt(self, charind):
+        if self.__charind2wordid is None:
+            self.__charind2wordid = [None] * len(self.form) 
+            for i, w in enumerate(self.word_list):
+                self.__charind2wordid[w.slice] = [w.id] * len(w.form)
+
+        return self.word_list[self.__charind2wordid[charind] - 1]
         
 class Word(Niklanson):
     """
@@ -643,70 +649,114 @@ class SRL(Niklanson):
     
 class SRLList(NiklansonList):
     element_type = SRL
-
-class CRList(list):
-    def __init__(self, cr_list):
-        if type(cr_list) is CRList:
-            # TODO: implement clone
-            raise NotImplementedError
-        elif type(cr_list) is list:
-            self.__init_from_json(cr_list)
-
-    def __init_from_json(self, cr_list):
-        self.__json = cr_list
-        
-        for cr in cr_list:
-            list.append(self, CR(cr))
-  
-
+    
 class CRMention(Niklanson):
-    def __init__(self, form : str, NE_id : int, sentence_id : int, begin : int, end : int):
+    def __init__(self,
+                 form : str = None,
+                 sentence_id : str = None,
+                 begin : int = None,
+                 end : int = None,
+                 NE_id : int = None,
+                 **kwargs):
         self.form = form
-        self.NE_id = NE_id
         self.sentence_id = sentence_id
         self.begin = begin
         self.end = end
+        self.NE_id = NE_id
+        self.update(kwargs)
 
+    @classmethod
+    def strict(cls, form: str, sentence_id: str, being: int, end: int, NE_id : int):
+        return cls(form, sentence_id, begin, end, NE_id)
+
+    @property
+    def slice(self):
+        return slice(self.begin, self.end)
+
+    @property
+    def slice_str(self):
+        return '{}:{}'.format(self.begin, self.end)
+
+class CRMentionList(NiklansonList):
+    element_type = CRMention
+    
 class CR(Niklanson):
     """
     CR (Cross Reference)
-    """
-    def __init__(self, mention: list(CRMention)):
-        """
-        """
-        self.mention = mention
     
-class ZAList(list):
-    def __init__(self, za_list):
-        if type(za_list) is ZAList:
-            # TODO: implement clone
-            raise NotImplementedError
-        elif type(za_list) is list:
-            self.__init_from_json(za_list)
+    mention: list of mentions
+    """
+    def __init__(self, mention: [] = [], **kwargs):
+        """
+        """
+        self.mention = CRMentionList(mention)
+        self.update(kwargs)
 
-    def __init_from_json(self, za_list):
-        self.__json = za_list
-        
-        for w in za_list:
-            list.append(self, ZA(w))
+    @classmethod
+    def strict(cls, mention: []):
+        return cls(mention)
  
+class CRList(NiklansonList):
+    element_type = CR
 
 class ZAPredicate(Niklanson):
-    def __init__(self, form: str, sentence_id: int, begin: int, end: int):
+    def __init__(self,
+                 form: str = None,
+                 sentence_id: int = None,
+                 begin: int = None,
+                 end: int = None,
+                 **kwargs):
         self.form = form
         self.sentence_id = sentence_id
         self.begin = begin
         self.end = end
+        self.update(kwargs)
+
+    @classmethod
+    def strict(form, sentence_id, begin, end):
+        return cls(form, sentence_id, begin, end)
 
 class ZAAntecedent(Niklanson):
-    def __init__(self, type: str, form: str, sentence_id: int, begin: int, end: int):
+    def __init__(self,
+                 form: str = None,
+                 type: str = None,
+                 sentence_id: int = None,
+                 begin: int = None,
+                 end: int = None,
+                 **kwargs):
         self.type = type
         self.form = form
         self.sentence_id = sentence_id
         self.begin = begin
         self.end = end
+        self.update(kwargs)
+        
+    @classmethod
+    def strict(cls, form, type, sentence_id, begin, end):
+        return cls(form, type, sentence_id, begin, end)
+
+    @property
+    def slice(self):
+        return slice(self.begin, self.end)
+
+    @property
+    def slice_str(self):
+        return '{}:{}'.format(self.begin, self.end)
+
+class ZAAntencedentList(NiklansonList):
+    element_type = ZAAntecedent
         
 class ZA(Niklanson):
-    def __init__(self, predicate: ZAPredicate, antecedent: list(ZAAntecedent)):
-       self.predicate = predicate
-       self.antecedent = antecedent
+    def __init__(self,
+                 predicate: {} = {},
+                 antecedent: [] = [],
+                 **kwargs):
+       self.predicate = ZAPredicate(**predicate)
+       self.antecedent = ZAAntencedentList(antecedent)
+
+    @classmethod
+    def strict(predicate: {}, antecedent: []):
+        return cls(predicate, antecedent)
+   
+class ZAList(NiklansonList):
+    element_type = ZA
