@@ -25,19 +25,29 @@ class Niklanson(dict):
     def json(self):
         return json.dumps(self, ensure_ascii=False)
 
-
-
     def __getattr__(self, name):
-        try:
-            return self[name]
-        except KeyError:
-            raise AttributeError(name)
+        if not name.startswith('_'):
+            try:
+                return self[name]
+            except KeyError:
+                raise AttributeError(name)
+        else:
+            try:
+                return super().__getattr__(name)
+            except KeyError:
+                raise AttributeError(name)
 
     def __setattr__(self, name, value):
-        self[name] = value
-
+        if name.startswith('_'):
+            super().__setattr__(name, value)
+        else:
+            self[name] = value
+            
     def __delattr__(self, name):
-        del self[name]
+        if name.startswith('_'):
+            super().__delattr__(name)
+        else:
+            del self[name]
 
 class NiklansonList(list):
     def __init__(self, xlist):
@@ -50,10 +60,3 @@ class NiklansonList(list):
     def __init_from_list(self, xlist):
         for x in xlist:
             list.append(self, self.element_type.from_dict(x))
-    
-    
-    
-
-
-    
-    

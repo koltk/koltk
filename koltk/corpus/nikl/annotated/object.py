@@ -29,19 +29,24 @@ import re
 import json
 
 class CorpusMetadata(Niklanson):
-    def __init__(self, iterable=(), **extra):
-        self.title = None
-        self.creator = None
-        self.distributor = None
-        self.year = None
-        self.category = None
-        self.annotation_level = []
-        self.sampling = None
-        
-        super().__init__(iterable)
-        self.update(extra)
+    def __init__(self, title = None,
+                 creator = None,
+                 distributor = None,
+                 year = None,
+                 category = None,
+                 annotation_level = [],
+                 sampling = None,
+                 **kwargs):
+        self.title = title
+        self.creator = creator
+        self.distributor = distributor
+        self.year = year
+        self.category = category
+        self.annotation_level = annotation_level
+        self.sampling = sampling
+        self.update(kwargs)
     
-class Corpus:
+class Corpus(Niklanson):
     """Corpus: the top level object.
 
     - id
@@ -66,260 +71,164 @@ class Corpus:
     
     .. code-block:: python
 
-        Corpus({ "id" : "", "metadata" : {}, "document" : [] })
-        Corpus(id='', metadata=None, document=[])
+        Corpus()
+        Corpus(id=None, metadata=None, document=[])
 
     """
-    def __init__(self, *args, **kwargs):
-        if args == [] and kwargs == {}:
-            self.__init_empty()
-        elif len(args) == 1 and kwargs == {}:
-            corpus = args[0]
-            if type(corpus) is Corpus:
-                # TODO: implement clone
-                raise NotImplementedError 
-            elif type(corpus) is dict:
-                self.__init_from_dict(corpus)
-            else:
-                raise TypeError
-        elif args == [] and len(kwargs) > 0:
-            self__init_from_kwargs(kwargs)
+    def __init__(self,
+                 id: str = None,
+                 metadata : {} = {},
+                 document: [] = [],
+                 **kwargs):
+        self.id = id
+        self.metadata = CorpusMetadata(**metadata)
+        self.document = DocumentList(document)
+        self.update(kwargs)
 
-    def __init_empty(self):
-        self.id = ''
-        self.metadata = None
-        self.__document_list = []
+    @classmethod
+    def strict(cls, id, metadata, document):
+        return cls(id, metadata, document)
         
-    def __init_from_dict(self, corpus):
-        #self.__json = corpus
-        self.id = corpus['id']
-        self.metadata = CorpusMetadata(corpus['metadata'])
-        self.__document_list = DocumentList(corpus['document'])
-
-    def __init_from_kwargs(self, kwargs):
-        self.id = kwargs['id']
-        self.metadata = kwargs['metadata']
-        self.__document_list = kwargs['document']
-        
-
     @property
     def document_list(self):
         """ :class:`.DocumentList`
         """
-        if self.__document_list is None:
-            self.__document_list = DocumentList(self.__json['document'])
+        #if self.document_list is None:
+        #    self.__document_list = DocumentList(self.__json['document'])
 
-        return self.__document_list
+        return self.document
 
     def __repr__(self):
         return 'Corpus(id={})'.format(self.id)
 
-
-class DocumentList(list):
-    def __init__(self, document_list):
-        if type(document_list) is DocumentList:
-            # TODO: implement clone
-            raise NotImplementedError
-        elif type(document_list) is list:
-            self.__init_from_json(document_list)
-
-    def __init_from_json(self, document_list):
-        self.__json = document_list
-
-        for doc in document_list:
-            list.append(self, Document(doc))
-                    
-
-
 class DocumentMetadata(Niklanson):
-    def __init__(self, iterable=(), **extra):
-        self.title = None
-        self.author = None
-        self.publisher = None
-        self.date = None
-        self.topic = None
-        self.url = None
-        
-        super().__init__(iterable)
-        self.update(extra)
-    
+    def __init__(self,
+                 title : str = None,
+                 author : str = None,
+                 publisher : str = None,
+                 date : str = None,
+                 topic : str = None,
+                 url : str = None,
+                 **kwargs):
+        self.title = title 
+        self.author = author
+        self.publisher = publisher
+        self.date = date
+        self.topic = topic
+        self.url = url
+        self.update(kwargs)
 
-class Document:
+    @classmethod
+    def strict(title, author, publisher, date, topic, url):
+        return cls(title, author, publisher, date, topic, url)
+    
+class Document(Niklanson):
     """
-    Document(id, metadata=DocumentMetadata(), sentence=[])
+    Document()
 
     ::
 
-        >>> d = Document('X200818')
-        >>> print(d)
-        {
-          "id": "X200818",
-          "metadata": {
-            "title": "",
-            "author": "",
-            "publisher": "",
-            "date": "",
-            "topic": "",
-            "url": ""
-          },
-          "sentence": [],
-          "ZA" : [],
-          "CR" : []
-        }
-       
+        >>> d = Document(id='X200818')
+      
     """
-    # def __init__(self, id=None, metadata=DocumentMetadata(), sentence = [], cr = [], za = []):
-    def __init__(self, document):
-        if type(document) is Document:
-            # TODO: implement clone
-            raise NotImplementedError
-        elif type(document) is dict:
-           self.__init_from_json(document) 
+    def __init__(self,
+                 id = None,
+                 metadata = {},
+                 sentence = [],
+                 CR = [],
+                 ZA = [],
+                 **kwargs):
+        self.id = id
+        self.metadata = DocumentMetadata.from_dict(metadata)
+        self.sentence = SentenceList(sentence)
+        self.CR = CRList(CR)
+        self.ZA = ZAList(ZA)
+        self.update(kwargs)
 
-    def __init_from_json(self, document):
-        self.__json = document
-        self.id = document['id']
-        self.metadata = DocumentMetadata(document['metadata'])
-        self.__sentence_list = None
-        self.__za_list = None
-        self.__cr_list = None
+    @classmethod
+    def strict(cls, id=None, metadata={}, sentence = [], CR = [], ZA = []):
+        return cls(id, metadata, sentence, CR, ZA)
 
     @property
     def sentence_list(self):
-        if self.__sentence_list is None:
-            self.__sentence_list = SentenceList(self.__json['sentence'])
-
-        return self.__sentence_list
+        return self.sentence
         
     @property
     def za_list(self):
-        if self.__za_list is None:
-            self.__za_list = ZAList(self.__json['ZA'])
-            
-        return self.__za_list
+        return self.ZA
   
     @property
     def cr_list(self):
-        if self.__cr_list is None:
-            self.__cr_list = CRList(self.__json['CR'])
-            
-        return self.__cr_list
+        return self.CR
   
     def __repr__(self):
         return 'Document(id={})'.format(self.id)
     
     def __str__(self):
-        return json.dumps(self.__json, ensure_ascii=False)
+        return json.dumps(self, ensure_ascii=False)
+ 
+class DocumentList(NiklansonList):
+    element_type = Document
     
-class SentenceList(list):
-    def __init__(self, sentence_list):
-        if type(sentence_list) is SentenceList:
-            # TODO: implement clone
-            raise NotImplementedError
-        elif type(sentence_list) is list:
-            self.__init_from_json(sentence_list)
-
-    def __init_from_json(self, sentence_list):
-        self.__json = sentence_list
-
-        for s in sentence_list:
-            list.append(self, Sentence(s))
-    
-class Sentence:
+   
+class Sentence(Niklanson):
     """
     Sentence(id, form)
 
     ::
 
         >>> s = Sentence('X200818', '아이들이 책을 읽는다.')
-        >>> print(s)
-        {
-          "id": "X200818",
-          "form": "아이들이 책을 읽는다.",
-          "word": [
-              {
-                "id": 1,
-                "form": "아이들이",
-                "begin": 0,
-                "end": 4
-              },
-              {
-                "id": 2,
-                "form": "책을",
-                "begin": 5,
-                "end": 7
-              },
-              {
-                "id": 3,
-                "form": "읽는다.",
-                "begin": 8,
-                "end": 12
-              }
-          ]
-        }    
+   """
+    def __init__(self,
+                 id: str = None,
+                 form: str = None,
+                 **kwargs):
+        self.id = id
+        self.form = form
+        for name, value in kwargs.items():
+            if name == 'word' : self.word = WordList(value)
+            elif name == 'morpheme' : self.morpheme = MorphemeList(value)
+            elif name == 'WSD' : self.WSD = WSDList(value)
+            elif name == 'NE' : self.NE = NEList(value)
+            elif name == 'DP' : self.DP = DPList(value)
+            elif name == 'SRL' : self.SRL = SRLList(value)
+            else: setattr(self, name, value)
 
-    """
-    #def __init__(self, id: str, form: str, word: list(Word) = None):
-    def __init__(self, sentence):
-        if type(sentence) is Sentence:
-            # TODO: implement clone
-            raise NotImplementedError
-        elif type(sentence) is dict:
-           self.__init_from_json(sentence)
-
-    def __init_from_json(self, sentence):
-        self.__json = sentence
-        self.id = sentence['id']
-        self.form = sentence['form']
-        self.__word_list = None 
-        self.__charind2wordid = None
-        self.__morpheme_list = None
-        self.__wsd_list = None
-        self.__ne_list = None
-        self.__dp_list = None
-        self.__srl_list = None
+    @classmethod
+    def strict(cls, id, form, word, morpheme, WSD, NE, DP, SRL):
+        return cls(id, form, word, morpheme, WSD, NE, DP, SRL)
 
     @property
     def word_list(self):
-        if self.__word_list is None:
-            self.__word_list = WordList(self.__json['word'])
+        if not hasattr(self, 'word'):
+            self.word = []
+            b = 0
+            for i, wform in enumerate(self.form.split()):
+                e = b + len(wform)
+                self.word.append(Word(id=i + 1, form=wform, begin=b, end=e))
+                b = e + 1
 
-        return self.__word_list
+        return self.word
     
     @property
     def morpheme_list(self):
-        if self.__morpheme_list is None:
-            self.__morpheme_list = MorphemeList(self.__json['morpheme'])
-            
-        return self.__morpheme_list
+        return self.morpheme
     
     @property
     def wsd_list(self):
-        if self.__wsd_list is None:
-            self.__wsd_list = WSDList(self.__json['WSD'])
-            
-        return self.__wsd_list
+        return self.WSD
         
     @property
     def ne_list(self):
-        if self.__ne_list is None:
-            self.__ne_list = NEList(self.__json['NE'])
-            
-        return self.__ne_list
+        return self.NE
   
     @property
     def dp_list(self):
-        if self.__dp_list is None:
-            self.__dp_list = DPList(self.__json['DP'])
-            
-        return self.__dp_list
+        return self.DP
   
     @property
     def srl_list(self):
-        if self.__srl_list is None:
-            self.__srl_list = SRLList(self.__json['SRL'])
-            
-        return self.__srl_list
+        return self.SRL
   
     def __init_word_list_from_sentence_form(self):
         self.__word_list = []
@@ -333,12 +242,13 @@ class Sentence:
                 i += 1
                 self.word.append(Word(i, tok, beg, beg + len(tok))) 
                 beg += len(tok)
+                
     @property
     def fwid(self):
         toks = self.id.split(".")
         if len(toks) == 2:
             docid, sentnum = toks
-            fw_sid = "{}-{:05d}".format(docid, int(sentnum))
+            fw_sid = "{}-{:04d}-{:05d}-{:05d}".format(docid, 1, 1, int(sentnum))
         elif len(toks) == 4:
             corpusid, docnum, paranum, sentnum = toks
             fw_sid = "{}-{:04d}-{:05d}-{:05d}".format(corpusid, int(docnum), int(paranum), int(sentnum))
@@ -348,17 +258,20 @@ class Sentence:
         return fw_sid
 
     def __repr__(self):
-        return json.dumps(self.__json, ensure_ascii=False)
+        return 'Sentence(id={}, form={})'.format(self.id, self.form)
         
 
     def wordAt(self, charind):
-        if self.__charind2wordid is None:
+        if not hasattr(self, '__charind2wordid'):
             self.__charind2wordid = [None] * len(self.form) 
             for i, w in enumerate(self.word_list):
                 self.__charind2wordid[w.slice] = [w.id] * len(w.form)
 
         return self.word_list[self.__charind2wordid[charind] - 1]
-        
+
+class SentenceList(NiklansonList):
+    element_type = Sentence
+            
 class Word(Niklanson):
     """
     Word
@@ -391,21 +304,7 @@ class WordList(NiklansonList):
     element_type = Word
 
    
-class MorphemeList(NiklansonList):
-    def __init__(self, morpheme_list):
-        if type(morpheme_list) is MorphemeList:
-            # TODO: implement clone
-            raise NotImplementedError
-        elif type(morpheme_list) is list:
-            self.__init_from_json(morpheme_list)
 
-    def __init_from_json(self, morpheme_list):
-        self.__json = morpheme_list
-        
-        for w in morpheme_list:
-            list.append(self, Morpheme.from_dict(w))
-            
- 
 class Morpheme(Niklanson):
     """Morpheme
     """
@@ -435,41 +334,28 @@ class Morpheme(Niklanson):
 
         return self.__str
 
-
-class WSDList(list):
-    def __init__(self, wsd_list):
-        if type(wsd_list) is WSDList:
-            # TODO: implement clone
-            raise NotImplementedError
-        elif type(wsd_list) is list:
-            self.__init_from_json(wsd_list)
-
-    def __init_from_json(self, wsd_list):
-        self.__json = wsd_list
-        
-        for w in wsd_list:
-            list.append(self, WSD(w))
+class MorphemeList(NiklansonList):
+   element_type = Morpheme 
  
+
 class WSD(Niklanson):
     """
     WSD (Word Sense Disambiguation)
     """
-    #def __init__(self, word: str, sense_id: int, pos : str, begin: int, end: int):
-    def __init__(self, wsd):
-        if type(wsd) is WSD:
-            pass
-        elif type(wsd) is dict:
-            self.__init_from_json(wsd)
-
-            
-    def __init_from_json(self, wsd):
-        super().update(wsd)
-        # self.word = word
-        # self.sense_id = sense_id
-        # self.pos = pos
-        # self.begin = begin
-        # self.end = end
-
+    def __init__(self,
+                 word: str = None,
+                 sense_id: int = None,
+                 pos : str = None,
+                 begin: int = None,
+                 end: int = None,
+                 **kwargs):
+        self.word = word
+        self.sense_id = sense_id
+        self.pos = pos
+        self.begin = begin
+        self.end = end
+        self.update(kwargs)
+        
     def __str__(self):
         return '{}__{:03d}/{}'.format(self.word, self.sense_id, self.pos)
 
@@ -481,41 +367,31 @@ class WSD(Niklanson):
     def slice_str(self):
         return '{}:{}'.format(self.begin, self.end)
     
-        
-class NEList(list):
-    def __init__(self, ne_list):
-        if type(ne_list) is NEList:
-            # TODO: implement clone
-            raise NotImplementedError
-        elif type(ne_list) is list:
-            self.__init_from_json(ne_list)
+class WSDList(NiklansonList):
+    element_type = WSD
+       
 
-    def __init_from_json(self, ne_list):
-        self.__json = ne_list
-        
-        for w in ne_list:
-            list.append(self, NE(w))
- 
 class NE(Niklanson):
     """
     NE (Named Entity)
     """
-    #def __init__(self, id: int, form: str, label: str, begin:int, end: int):
-    def __init__(self, ne):
-        if type(ne) is NE:
-            pass
-        elif type(ne) is dict:
-            self.__init_from_json(ne)
+    def __init__(self,
+                 id: int = None,
+                 form: str = None,
+                 label: str = None,
+                 begin: int = None,
+                 end: int = None,
+                 **kwargs):
+        self.id = id
+        self.form = form
+        self.label = label
+        self.begin = begin
+        self.end = end
+        self.update(kwargs)
 
-            
-    def __init_from_json(self, ne):
-        super().update(ne)
- 
-        # self.id = id
-        # self.form = form
-        # self.label = label
-        # self.begin = begin
-        # self.end = end
+    @classmethod
+    def strict(cls, id, form, label, begin, end):
+        return cls(id, form, label, begin, end)
 
     @property
     def slice_str(self):
@@ -527,43 +403,48 @@ class NE(Niklanson):
 
     def __str__(self):
         return '{}/{}'.format(self.form, self.label)
+    
+class NEList(NiklansonList):
+    element_type = NE
 
-class DPList(list):
-    def __init__(self, dp_list):
-        if type(dp_list) is DPList:
-            # TODO: implement clone
-            raise NotImplementedError
-        elif type(dp_list) is list:
-            self.__init_from_json(dp_list)
 
-    def __init_from_json(self, dp_list):
-        self.__json = dp_list
-        
-        for w in dp_list:
-            list.append(self, DP(w))
- 
 
 class DP(Niklanson):
     """
     DP (Denpendency Parsing)
     """
-    #def __init__(self, word_id: int, word_form: str, head: int, label: str, depdendent: list[int]):
-    def __init__(self, dp):
-        if type(dp) is DP:
-            pass
-        elif type(dp) is dict:
-            self.__init_from_json(dp)
+    def __init__(self,
+                 word_id: int = None,
+                 word_form: str = None,
+                 head: int = None,
+                 label: str = None,
+                 dependent: list[int] = None,
+                 **kwargs):
+        self.word_id = word_id
+        self.word_form = word_form
+        self.head = head
+        self.label = label
+        self.dependent = dependent
+        self.update(kwargs)
+        
+class DPList(NiklansonList):
+    element_type = DP
 
-            
-    def __init_from_json(self, dp):
-        super().update(dp)
- 
-        # self.word_id = word_id
-        # self.word_form = word_form
-        # self.head = head
-        # self.label = label
-        # self.dependent = dependent
-       
+    @property
+    def root_word_id(self) :
+        for dp in self:
+            if dp.head == -1:
+                return dp.word_id
+
+    @property
+    def heads(self):
+        if not hasattr(self, '_heads'):
+            self._heads = []
+            for dp in self:
+                self._heads.append(dp.head)
+
+        return self._heads
+      
 class SRLPredicate(Niklanson):
     def __init__(self,
                  form: str = None,
@@ -649,6 +530,7 @@ class SRL(Niklanson):
     
 class SRLList(NiklansonList):
     element_type = SRL
+    
     
 class CRMention(Niklanson):
     def __init__(self,
