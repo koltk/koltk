@@ -8,21 +8,28 @@ try:
 except ImportError:
     import json
 
-from .object import Corpus, CorpusMetadata, DocumentList
+from .object import Corpus, CorpusMetadata, DocumentList, Document
 
 class NiklansonReader:
     """NIKL ANnotated corpus JSON format file reader.
 
     Wrap file contents into a corpus. The top level object of a file may be a
-    corpus, a doucment, or a sentence.
+    corpus or a doucment.
 
     """
     def __init__(self, filename):
         self.__filename = filename
         with open(filename) as file:
             self.__data = json.load(file)
-        
-        self.__level = None
+            
+            if 'document' in self.__data:
+                self.__toplevel = 'corpus'
+                self.__corpus = Corpus.from_dict(self.__data)
+            elif 'sentence' in self.__data:
+                self.__toplevel = 'document'
+                self.__document = Document.from_dict(self.__data)
+            else:
+                self.__toplevel = None
 
     @property
     def filename(self):
@@ -33,42 +40,32 @@ class NiklansonReader:
         return os.path.basename(self.__filename)
 
     @property
-    def level(self):
-        if 'document' in self.__data:
-            self.__level = 'corpus'
-        elif 'sentence' in self.__data:
-            self.__level = 'document'
-        elif 'form' in self.__data:
-            self.__level = 'sentence'
-
-        return self.__level
+    def toplevel(self):
+        return self.__toplevel
         
     @property
     def corpus(self):
-        if self.level == 'corpus' :
-            corpus= self.__data
-        elif self.level == 'document' :
-            corpus = { 'id' : '', 'metadata' : {}, 'document' : [ self.__data ] }
-        elif self.level == 'sentence' :
-            doc = { 'id' : '', 'metadata' : {}, 'sentence' : [ self.__data ]  }
-            corpus = { 'id' : '', 'metadata' : {}, 'document' : doc }
+        if self.toplevel == 'corpus' :
+            return self.__corpus
+        else:
+            raise Exception('The top level object is not a corpus.')
 
-        return Corpus(corpus)
+    @property
+    def document(self):
+        if self.toplevel == 'document':
+            return self.__document
+        else:
+            raise Exception('The top level object is not a document.')
 
     @property
     def document_list(self):
-        if self.level == 'corpus' :
-            doclist = self.__data['document']
-        elif self.level == 'document' :
-            doclist = [ self.__data ]
-        elif self.level == 'sentence' :
-            doc = { 'id' : '', 'metadata' : {}, 'sentence' : [ self.__data ]  }
-            doclist= [ doc ]
-
-        return DocumentList(doclist)
-    
+        if self.toplevel == 'corpus' :
+            return self.corpus.document_list
+        elif self.toplevel == 'document' :
+            return [self.document]
+            
     def __repr__(self):
-        return self.filename + ' ' + self.level
+        return 'NiklansonReader(filename={}, toplevel={})'.format(self.filename, self.toplevel)
 
 
 
@@ -80,38 +77,26 @@ class NiklansonCorpusReader:
     def __init__(self, filename):
         self.filename = filename
         with open(filename) as file:
-            self.__data = json.load(file)
+            self.data = json.load(file)
         
     @property
     def corpus(self):
-        return Corpus(self.__data) 
-
-    @property
-    def document_list(self):
-        return DocumentList(self.__data['document'])
-
+        return Corpus.from_dict(self.data) 
 
 class NiklansonDocumentReader:
     """NIKL ANnotated corpus JSON Document file Reader.
 
     Read NIKL annotated document JSON files
     """
-    def __init__(self, filenames):
-        pass
+    def __init__(self, filename):
+        self.filename = filename
+        with open(filename) as file:
+            self.data = json.load(file)
 
-class NiklansonSentenceReader:
-    """NIKL ANnotated Corpus Sentence file Reader.
+    @property
+    def document(self):
+        return Document.from_dict(self.data)
 
-    Read NIKL annotated sentence JSON files
-    """
-    def __init__(self, filenames):
-        pass
-    
-     
-if __name__ == '__main__':
-    import sys
-    nr = NiklansonReader(sys.argv[1])
-    print(nr)
     
 
 
