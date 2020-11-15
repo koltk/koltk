@@ -166,6 +166,15 @@ class Document(Niklanson):
     
     def __str__(self):
         return json.dumps(self, ensure_ascii=False)
+
+    def getSentenceById(self, sentence_id):
+        if not hasattr(self, '__sentence_id2index'):
+            self.__sentence_id2index = {}
+            for i, sent in enumerate(self.sentence_list):
+                self.__sentence_id2index[sent.id] = i
+                
+        return self.sentence_list[self.__sentence_id2index[sentence_id]]
+
  
 class DocumentList(NiklansonList):
     element_type = Document
@@ -267,7 +276,10 @@ class Sentence(Niklanson):
             for i, w in enumerate(self.word_list):
                 self.__charind2wordid[w.slice] = [w.id] * len(w.form)
 
-        return self.word_list[self.__charind2wordid[charind] - 1]
+        try:
+            return self.word_list[self.__charind2wordid[charind] - 1]
+        except:
+            raise Exception('No word at {}: {}'.format(charind, self.form))
 
 class SentenceList(NiklansonList):
     element_type = Sentence
@@ -356,7 +368,8 @@ class WSD(Niklanson):
         self.end = end
         self.update(kwargs)
         
-    def __str__(self):
+    @property
+    def str(self):
         return '{}__{:03d}/{}'.format(self.word, self.sense_id, self.pos)
 
     @property
@@ -401,7 +414,8 @@ class NE(Niklanson):
     def slice(self):
         return slice(self.begin, self.end)
 
-    def __str__(self):
+    @property
+    def str(self):
         return '{}/{}'.format(self.form, self.label)
     
 class NEList(NiklansonList):
@@ -577,6 +591,10 @@ class CR(Niklanson):
     @classmethod
     def strict(cls, mention: []):
         return cls(mention)
+
+    @property
+    def mention_list(self):
+        return self.mention
  
 class CRList(NiklansonList):
     element_type = CR
@@ -595,8 +613,16 @@ class ZAPredicate(Niklanson):
         self.update(kwargs)
 
     @classmethod
-    def strict(form, sentence_id, begin, end):
+    def strict(cls, form, sentence_id, begin, end):
         return cls(form, sentence_id, begin, end)
+
+    @property
+    def slice(self):
+        return slice(self.begin, self.end)
+
+    @property
+    def slice_str(self):
+        return '{}:{}'.format(self.begin, self.end)
 
 class ZAAntecedent(Niklanson):
     def __init__(self,
