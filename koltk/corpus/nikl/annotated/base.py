@@ -12,11 +12,11 @@ class Niklanson(dict):
     NIKL Annotated Corpus JSON 
     """ 
     @classmethod
-    def from_dict(cls, dic):
+    def from_dict(cls, dic, parent=None):
         if type(dic) is not dict:
             raise ValueError
 
-        return cls(**dic)
+        return cls(**dic, parent=parent)
 
     @classmethod
     def from_json(cls, json_str):
@@ -50,13 +50,30 @@ class Niklanson(dict):
             del self[name]
 
 class NiklansonList(list):
-    def __init__(self, xlist):
+    """NiklansonList: NIKL ANnotated Corpus JSON List
+
+    element_type : set the type of the element of the list
+   
+    For example) self.element_type = Sentence
+    """
+    def __init__(self, xlist, parent=None):
+        self.__parent = parent
+        
         if type(xlist) is type(self):
             # TODO: implement clone
             raise NotImplementedError
         elif type(xlist) is list:
-            self.__init_from_list(xlist)
+            self.__init_from_list(xlist, parent)
+
+        self.postprocess()
+
+    @property
+    def parent(self):
+        return self.__parent
+    
+    def postprocess(self):
+        pass
             
-    def __init_from_list(self, xlist):
+    def __init_from_list(self, xlist, parent):
         for x in xlist:
-            list.append(self, self.element_type.from_dict(x))
+            list.append(self, self.element_type.from_dict(x, parent=parent))
