@@ -11,6 +11,9 @@ class Niklanson(dict):
     """
     NIKL Annotated Corpus JSON 
     """ 
+    def __init__(self, parent=None):
+        self.__parent = parent
+        
     @classmethod
     def from_dict(cls, dic, parent=None):
         if type(dic) is not dict:
@@ -21,6 +24,19 @@ class Niklanson(dict):
     @classmethod
     def from_json(cls, json_str):
         return cls(**json.loads(json_str))
+
+    @property
+    def parent(self):
+        return self.__parent
+    
+    @property
+    def slice(self):
+        return slice(self.begin, self.end)
+
+    @property
+    def slice_str(self):
+        return '{}:{}'.format(self.begin, self.end)
+
 
     def json(self):
         return json.dumps(self, ensure_ascii=False)

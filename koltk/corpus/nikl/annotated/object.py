@@ -82,7 +82,7 @@ class Corpus(Niklanson):
                  **kwargs):
         self.id = id
         self.metadata = CorpusMetadata(**metadata)
-        self.document = DocumentList(document)
+        self.document = DocumentList(document, parent=self)
         self.update(kwargs)
 
     @classmethod
@@ -132,23 +132,34 @@ class Document(Niklanson):
       
     """
     def __init__(self,
+                 parent = None,
                  id = None,
                  metadata = {},
                  sentence = [],
-                 CR = [],
-                 ZA = [],
                  **kwargs):
+        super().__init__(parent)
         self.id = id
         self.metadata = DocumentMetadata.from_dict(metadata)
         self.sentence = SentenceList(sentence, parent=self)
-        self.CR = CRList(CR)
-        self.ZA = ZAList(ZA)
-        self.update(kwargs)
+        for name, value in kwargs.items():
+            if name == 'CR' : self.CR = CRList(value, parent=self)
+            elif name == 'ZA' : self.ZA = ZAList(value, parent=self)
+            else: setattr(self, name, value)
 
     @classmethod
     def strict(cls, id=None, metadata={}, sentence = [], CR = [], ZA = []):
         return cls(id, metadata, sentence, CR, ZA)
 
+    @property
+    def fwid(self):
+        toks = self.id.split('.')
+        if len(toks) == 1:
+            return '{}-0001'.format(toks[0])
+        elif len(toks) == 2:
+            return '{}-{:04d}'.format(toks[0], int(toks[1]))
+        else:
+            raise Exception('document id error: {}'.format(self.id))
+   
     @property
     def sentence_list(self):
         return self.sentence
@@ -193,26 +204,21 @@ class Sentence(Niklanson):
                  id: str = None,
                  form: str = None,
                  **kwargs):
-        
-        self.__parent = parent
+        super().__init__(parent)
         self.id = id
         self.form = form
         for name, value in kwargs.items():
             if name == 'word' : self.word = WordList(value, parent=self)
-            elif name == 'morpheme' : self.morpheme = MorphemeList(value)
-            elif name == 'WSD' : self.WSD = WSDList(value)
-            elif name == 'NE' : self.NE = NEList(value)
-            elif name == 'DP' : self.DP = DPList(value)
-            elif name == 'SRL' : self.SRL = SRLList(value)
+            elif name == 'morpheme' : self.morpheme = MorphemeList(value, parent=self)
+            elif name == 'WSD' : self.WSD = WSDList(value, parent=self)
+            elif name == 'NE' : self.NE = NEList(value, parent=self)
+            elif name == 'DP' : self.DP = DPList(value, parent=self)
+            elif name == 'SRL' : self.SRL = SRLList(value, parent=self)
             else: setattr(self, name, value)
 
     @classmethod
     def strict(cls, id, form, word, morpheme, WSD, NE, DP, SRL):
         return cls(id, form, word, morpheme, WSD, NE, DP, SRL)
-
-    @property
-    def parent(self):
-        return self.__parent
 
     @property
     def word_list(self):
@@ -273,21 +279,22 @@ class Sentence(Niklanson):
 
         return fw_sid
 
+    @property
+    def snum(self):
+        """snum: sentence number prefixed with 's'
+        """
+        return 's{}'.format(self.num)
+
 
     @property
-    def dsid(self):
-        """dsid: document sentence id.
-        within a document
+    def num(self):
+        """num: sentence number within a document
         """
-        return self.__dsid
-
-
-    @dsid.setter
-    def dsid(self, value):
-        self.__dsid = value
+        return self.__num
     
-    
-
+    @num.setter
+    def num(self, value):
+        self.__num = value
 
     def __repr__(self):
         return 'Sentence(id={}, form={})'.format(self.id, self.form)
@@ -310,7 +317,7 @@ class SentenceList(NiklansonList):
 
     def postprocess(self):
         for i, sentence in enumerate(self):
-            sentence.dsid = 's{}'.format(i+1)
+            sentence.num = i + 1
     
             
 class Word(Niklanson):
@@ -324,7 +331,7 @@ class Word(Niklanson):
                  begin : int = None,
                  end : int = None,
                  **kwargs):
-        self.__parent = parent
+        super().__init__(parent)
         self.id = id
         self.form = form
         self.begin = begin
@@ -334,27 +341,15 @@ class Word(Niklanson):
     @classmethod
     def strict(cls, id: int, form: str, begin: int, end: int):
         return cls(id, form, begin, end)
-
-    @property
-    def parent(self):
-        return self.__parent
-    
+   
     @property
     def gid(self):
-        return '{}_{:03d}'.format(self.__parent.fwid, self.id)
+        return '{}_{:03d}'.format(self.parent.fwid, self.id)
 
     @property
-    def dswid(self):
-        return '{}_{}'.format(self.__parent.dsid, self.id)
+    def swid(self):
+        return '{}_{}'.format(self.parent.snum, self.id)
     
-    @property
-    def slice(self):
-        return slice(self.begin, self.end) 
-
-    @property
-    def slice_str(self):
-       return '{}:{}'.format(self.begin, self.end) 
-
 class WordList(NiklansonList):
     element_type = Word
 
@@ -364,12 +359,14 @@ class Morpheme(Niklanson):
     """Morpheme
     """
     def __init__(self,
+                 parent: Sentence = None,
                  id : int = None,
                  form: str = None,
                  label : str = None,
                  word_id : int = None,
                  position : int = None,
                  **kwargs):
+        super().__init__(parent)
         self.id = id
         self.form = form
         self.label = label
@@ -398,12 +395,14 @@ class WSD(Niklanson):
     WSD (Word Sense Disambiguation)
     """
     def __init__(self,
+                 parent: Sentence = None,
                  word: str = None,
                  sense_id: int = None,
                  pos : str = None,
                  begin: int = None,
                  end: int = None,
                  **kwargs):
+        super().__init__(parent)
         self.word = word
         self.sense_id = sense_id
         self.pos = pos
@@ -415,14 +414,7 @@ class WSD(Niklanson):
     def str(self):
         return '{}__{:03d}/{}'.format(self.word, self.sense_id, self.pos)
 
-    @property
-    def slice(self):
-        return slice(self.begin, self.end)
-
-    @property
-    def slice_str(self):
-        return '{}:{}'.format(self.begin, self.end)
-    
+   
 class WSDList(NiklansonList):
     element_type = WSD
        
@@ -432,12 +424,14 @@ class NE(Niklanson):
     NE (Named Entity)
     """
     def __init__(self,
+                 parent: Sentence = None,
                  id: int = None,
                  form: str = None,
                  label: str = None,
                  begin: int = None,
                  end: int = None,
                  **kwargs):
+        super().__init__(parent)
         self.id = id
         self.form = form
         self.label = label
@@ -448,14 +442,6 @@ class NE(Niklanson):
     @classmethod
     def strict(cls, id, form, label, begin, end):
         return cls(id, form, label, begin, end)
-
-    @property
-    def slice_str(self):
-        return '{}:{}'.format(self.begin, self.end)
-
-    @property
-    def slice(self):
-        return slice(self.begin, self.end)
 
     @property
     def str(self):
@@ -471,12 +457,14 @@ class DP(Niklanson):
     DP (Denpendency Parsing)
     """
     def __init__(self,
+                 parent: Sentence = None,
                  word_id: int = None,
                  word_form: str = None,
                  head: int = None,
                  label: str = None,
                  dependent: list[int] = None,
                  **kwargs):
+        super().__init__(parent)
         self.word_id = word_id
         self.word_form = word_form
         self.head = head
@@ -504,12 +492,14 @@ class DPList(NiklansonList):
       
 class SRLPredicate(Niklanson):
     def __init__(self,
+                 parent: SRL = None,
                  form: str = None,
                  begin: int = None,
                  end: int = None,
                  lemma: str = None,
                  sense_id: int = None,
                  **kwargs):
+        super().__init__(parent)
         self.form = form
         self.begin = begin
         self.end = end
@@ -522,28 +512,19 @@ class SRLPredicate(Niklanson):
         return cls(form, begin, end, lemma, sense_id) 
 
     @property
-    def slice(self):
-        return slice(self.begin, self.end)
-
-    @property
-    def slice_str(self):
-        return '{}:{}'.format(self.begin, self.end)
-
-    @property
     def str(self):
-        return self.__str__()
-    
-    def __str__(self):
         return '{}__{}'.format(self.lemma, self.sense_id)
 
 class SRLArgument(Niklanson):
 
     def __init__(self,
+                 parent: SRL = None,
                  form: str = None,
                  label: str = None,
                  begin: int = None,
                  end: int = None,
                  **kwargs):
+        super().__init__(parent)
         self.form = form
         self.label = label
         self.begin = begin
@@ -553,14 +534,6 @@ class SRLArgument(Niklanson):
     @classmethod
     def strict(cls, form: str, label: str, begin: int, end: int):
         return cls(form, label, begin, end)
-
-    @property
-    def slice(self):
-        return slice(self.begin, self.end)
-
-    @property
-    def slice_str(self):
-        return '{}:{}'.format(self.begin, self.end)
 
     @property
     def str(self):
@@ -581,11 +554,13 @@ class SRL(Niklanson):
         >>> SRL(predicate={}, argument=[{}, {}])
     """
     def __init__(self,
+                 parent: Sentence = None,
                  predicate: {} = {},
                  argument: [] = [],
                  **kwargs):
-        self.predicate = SRLPredicate(**predicate)
-        self.argument_list = SRLArgumentList(argument)
+        super().__init__(parent)
+        self.predicate = SRLPredicate(**predicate, parent=self)
+        self.argument_list = SRLArgumentList(argument, parent=self)
         self.update(kwargs)
         
     @classmethod
@@ -600,12 +575,14 @@ class SRLList(NiklansonList):
     
 class CRMention(Niklanson):
     def __init__(self,
+                 parent: CR = None,
                  form : str = None,
                  sentence_id : str = None,
                  begin : int = None,
                  end : int = None,
                  NE_id : int = None,
                  **kwargs):
+        super().__init__(parent)
         self.form = form
         self.sentence_id = sentence_id
         self.begin = begin
@@ -617,14 +594,6 @@ class CRMention(Niklanson):
     def strict(cls, form: str, sentence_id: str, being: int, end: int, NE_id : int):
         return cls(form, sentence_id, begin, end, NE_id)
 
-    @property
-    def slice(self):
-        return slice(self.begin, self.end)
-
-    @property
-    def slice_str(self):
-        return '{}:{}'.format(self.begin, self.end)
-
 class CRMentionList(NiklansonList):
     element_type = CRMention
     
@@ -634,10 +603,14 @@ class CR(Niklanson):
     
     mention: list of mentions
     """
-    def __init__(self, mention: [] = [], **kwargs):
+    def __init__(self,
+                 parent: Document = None,
+                 mention: [] = [],
+                 **kwargs):
         """
         """
-        self.mention = CRMentionList(mention)
+        super().__init__(parent)
+        self.mention = CRMentionList(mention, parent=self)
         self.update(kwargs)
 
     @classmethod
@@ -653,11 +626,13 @@ class CRList(NiklansonList):
 
 class ZAPredicate(Niklanson):
     def __init__(self,
+                 parent: ZA = None,
                  form: str = None,
                  sentence_id: int = None,
                  begin: int = None,
                  end: int = None,
                  **kwargs):
+        super().__init__(parent)
         self.form = form
         self.sentence_id = sentence_id
         self.begin = begin
@@ -668,22 +643,16 @@ class ZAPredicate(Niklanson):
     def strict(cls, form, sentence_id, begin, end):
         return cls(form, sentence_id, begin, end)
 
-    @property
-    def slice(self):
-        return slice(self.begin, self.end)
-
-    @property
-    def slice_str(self):
-        return '{}:{}'.format(self.begin, self.end)
-
 class ZAAntecedent(Niklanson):
     def __init__(self,
+                 parent: ZA = None,
                  form: str = None,
                  type: str = None,
                  sentence_id: int = None,
                  begin: int = None,
                  end: int = None,
                  **kwargs):
+        super().__init__(parent)
         self.type = type
         self.form = form
         self.sentence_id = sentence_id
@@ -695,24 +664,19 @@ class ZAAntecedent(Niklanson):
     def strict(cls, form, type, sentence_id, begin, end):
         return cls(form, type, sentence_id, begin, end)
 
-    @property
-    def slice(self):
-        return slice(self.begin, self.end)
-
-    @property
-    def slice_str(self):
-        return '{}:{}'.format(self.begin, self.end)
-
 class ZAAntencedentList(NiklansonList):
     element_type = ZAAntecedent
         
 class ZA(Niklanson):
     def __init__(self,
+                 parent: Document = None,
                  predicate: {} = {},
                  antecedent: [] = [],
                  **kwargs):
-       self.predicate = ZAPredicate(**predicate)
-       self.antecedent = ZAAntencedentList(antecedent)
+        
+        super().__init__(parent)
+        self.predicate = ZAPredicate(**predicate)
+        self.antecedent = ZAAntencedentList(antecedent)
 
     @classmethod
     def strict(predicate: {}, antecedent: []):
