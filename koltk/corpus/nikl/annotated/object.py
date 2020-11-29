@@ -476,6 +476,14 @@ class DP(Niklanson):
         self.label = label
         self.dependent = dependent
         self.update(kwargs)
+
+    @property
+    def head_node(self):
+        if self.head != -1:
+            return self.parent.dp_list[self.head - 1]
+        else:
+            return None
+        
         
 class DPList(NiklansonList):
     element_type = DP
