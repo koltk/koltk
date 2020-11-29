@@ -68,6 +68,12 @@ class NiklansonReader:
         return 'NiklansonReader(filename={}, toplevel={})'.format(self.filename, self.toplevel)
 
 
+    def json(self, ensure_ascii=False, **kwargs):
+        if self.toplevel == 'corpus':
+            return self.corpus.json(ensure_ascii=ensure_ascii, **kwargs)
+        elif self.toplevel == 'document':
+            return self.document.json(ensure_ascii=ensure_ascii, **kwargs)
+
 
 class NiklansonCorpusReader:
     """NIKL Annotated Corpus JSON Reader.
