@@ -29,7 +29,9 @@ import re
 import json
 
 class CorpusMetadata(Niklanson):
-    def __init__(self, title = None,
+    def __init__(self,
+                 parent: Corpus = None,
+                 title = None,
                  creator = None,
                  distributor = None,
                  year = None,
@@ -37,6 +39,7 @@ class CorpusMetadata(Niklanson):
                  annotation_level = [],
                  sampling = None,
                  **kwargs):
+        super().__init__(parent=parent)
         self.title = title
         self.creator = creator
         self.distributor = distributor
@@ -103,6 +106,7 @@ class Corpus(Niklanson):
 
 class DocumentMetadata(Niklanson):
     def __init__(self,
+                 parent: Document = None,
                  title : str = None,
                  author : str = None,
                  publisher : str = None,
@@ -110,12 +114,13 @@ class DocumentMetadata(Niklanson):
                  topic : str = None,
                  url : str = None,
                  **kwargs):
+        super().__init__(parent=parent)
+        self.date = date
         self.title = title 
         self.author = author
         self.publisher = publisher
-        self.date = date
         self.topic = topic
-        self.url = url
+        if url is not None: self.url = url
         self.update(kwargs)
 
     @classmethod
@@ -137,9 +142,9 @@ class Document(Niklanson):
                  metadata = {},
                  sentence = [],
                  **kwargs):
-        super().__init__(parent)
+        super().__init__(parent=parent)
         self.id = id
-        self.metadata = DocumentMetadata.from_dict(metadata)
+        self.metadata = DocumentMetadata.from_dict(metadata, parent=self)
         self.sentence = SentenceList(sentence, parent=self)
         for name, value in kwargs.items():
             if name == 'CR' : self.CR = CRList(value, parent=self)
@@ -201,10 +206,12 @@ class Sentence(Niklanson):
    """
     def __init__(self,
                  parent: Document = None,
+                 num: int = None,
                  id: str = None,
                  form: str = None,
                  **kwargs):
-        super().__init__(parent)
+        super().__init__(parent=parent)
+        self.__num = num
         self.id = id
         self.form = form
         for name, value in kwargs.items():
@@ -283,18 +290,7 @@ class Sentence(Niklanson):
     def snum(self):
         """snum: sentence number prefixed with 's'
         """
-        return 's{}'.format(self.num)
-
-
-    @property
-    def num(self):
-        """num: sentence number within a document
-        """
-        return self.__num
-    
-    @num.setter
-    def num(self, value):
-        self.__num = value
+        return 's{}'.format(self.__num)
 
     def __repr__(self):
         return 'Sentence(id={}, form={})'.format(self.id, self.form)
@@ -314,10 +310,19 @@ class Sentence(Niklanson):
 class SentenceList(NiklansonList):
     element_type = Sentence
 
-
-    def postprocess(self):
-        for i, sentence in enumerate(self):
-            sentence.num = i + 1
+    def __init__(self, sentence_dic_list, parent=None):
+        """
+        @param sentence_dic_list: a list of dict. 
+        a dict is { id, form }
+        """
+        self.__parent = parent
+        for i, s in enumerate(sentence_dic_list):
+            list.append(self, Sentence(**s, parent=parent, num=i+1))
+    
+        
+    @property
+    def parent(self):
+        return self.__parent
     
             
 class Word(Niklanson):
@@ -331,7 +336,7 @@ class Word(Niklanson):
                  begin : int = None,
                  end : int = None,
                  **kwargs):
-        super().__init__(parent)
+        super().__init__(parent=parent)
         self.id = id
         self.form = form
         self.begin = begin
@@ -366,7 +371,7 @@ class Morpheme(Niklanson):
                  word_id : int = None,
                  position : int = None,
                  **kwargs):
-        super().__init__(parent)
+        super().__init__(parent=parent)
         self.id = id
         self.form = form
         self.label = label
@@ -402,7 +407,7 @@ class WSD(Niklanson):
                  begin: int = None,
                  end: int = None,
                  **kwargs):
-        super().__init__(parent)
+        super().__init__(parent=parent)
         self.word = word
         self.sense_id = sense_id
         self.pos = pos
@@ -431,7 +436,7 @@ class NE(Niklanson):
                  begin: int = None,
                  end: int = None,
                  **kwargs):
-        super().__init__(parent)
+        super().__init__(parent=parent)
         self.id = id
         self.form = form
         self.label = label
@@ -464,7 +469,7 @@ class DP(Niklanson):
                  label: str = None,
                  dependent: list[int] = None,
                  **kwargs):
-        super().__init__(parent)
+        super().__init__(parent=parent)
         self.word_id = word_id
         self.word_form = word_form
         self.head = head
@@ -499,7 +504,7 @@ class SRLPredicate(Niklanson):
                  lemma: str = None,
                  sense_id: int = None,
                  **kwargs):
-        super().__init__(parent)
+        super().__init__(parent=parent)
         self.form = form
         self.begin = begin
         self.end = end
@@ -524,7 +529,7 @@ class SRLArgument(Niklanson):
                  begin: int = None,
                  end: int = None,
                  **kwargs):
-        super().__init__(parent)
+        super().__init__(parent=parent)
         self.form = form
         self.label = label
         self.begin = begin
@@ -558,9 +563,9 @@ class SRL(Niklanson):
                  predicate: {} = {},
                  argument: [] = [],
                  **kwargs):
-        super().__init__(parent)
+        super().__init__(parent=parent)
         self.predicate = SRLPredicate(**predicate, parent=self)
-        self.argument_list = SRLArgumentList(argument, parent=self)
+        self.argument = SRLArgumentList(argument, parent=self)
         self.update(kwargs)
         
     @classmethod
@@ -568,6 +573,10 @@ class SRL(Niklanson):
         """
         """
         return cls(predicate, argument)
+
+    @property
+    def argument_list(self):
+        return self.argument
     
 class SRLList(NiklansonList):
     element_type = SRL
@@ -582,7 +591,7 @@ class CRMention(Niklanson):
                  end : int = None,
                  NE_id : int = None,
                  **kwargs):
-        super().__init__(parent)
+        super().__init__(parent=parent)
         self.form = form
         self.sentence_id = sentence_id
         self.begin = begin
@@ -609,7 +618,7 @@ class CR(Niklanson):
                  **kwargs):
         """
         """
-        super().__init__(parent)
+        super().__init__(parent=parent)
         self.mention = CRMentionList(mention, parent=self)
         self.update(kwargs)
 
@@ -632,7 +641,7 @@ class ZAPredicate(Niklanson):
                  begin: int = None,
                  end: int = None,
                  **kwargs):
-        super().__init__(parent)
+        super().__init__(parent=parent)
         self.form = form
         self.sentence_id = sentence_id
         self.begin = begin

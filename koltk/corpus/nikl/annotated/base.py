@@ -38,8 +38,8 @@ class Niklanson(dict):
         return '{}:{}'.format(self.begin, self.end)
 
 
-    def json(self):
-        return json.dumps(self, ensure_ascii=False)
+    def json(self, ensure_ascii=False, **kwargs):
+        return json.dumps(self, ensure_ascii=False, **kwargs)
 
     def __getattr__(self, name):
         if not name.startswith('_'):
