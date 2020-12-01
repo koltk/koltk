@@ -31,13 +31,13 @@ import json
 class CorpusMetadata(Niklanson):
     def __init__(self,
                  parent: Corpus = None,
-                 title = None,
-                 creator = None,
-                 distributor = None,
-                 year = None,
-                 category = None,
-                 annotation_level = [],
-                 sampling = None,
+                 title: str = '',               # required
+                 creator: str = '',             # required
+                 distributor: str = '',         # required
+                 year: str = '',                # required
+                 category: str = '',            # required
+                 annotation_level = [],         # required
+                 sampling: str = '',            # required for news, written, spoken, web
                  **kwargs):
         super().__init__(parent=parent)
         self.title = title
@@ -107,12 +107,12 @@ class Corpus(Niklanson):
 class DocumentMetadata(Niklanson):
     def __init__(self,
                  parent: Document = None,
-                 title : str = None,
-                 author : str = None,
-                 publisher : str = None,
-                 date : str = None,
-                 topic : str = None,
-                 url : str = None,
+                 title : str = '',            # required
+                 author : str = '',           # required
+                 publisher : str = '',        # required
+                 date : str = '',             # required
+                 topic : str = '',            # required for news, spoken, messenger
+                 url : str = None,            # optional attribute
                  **kwargs):
         super().__init__(parent=parent)
         self.date = date
