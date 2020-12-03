@@ -594,10 +594,10 @@ class CRMention(Niklanson):
     def __init__(self,
                  parent: CR = None,
                  form : str = None,
+                 NE_id : int = None,
                  sentence_id : str = None,
                  begin : int = None,
                  end : int = None,
-                 NE_id : int = None,
                  **kwargs):
         super().__init__(parent=parent)
         self.form = form
