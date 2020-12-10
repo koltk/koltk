@@ -476,6 +476,7 @@ class DP(Niklanson):
         self.label = label
         self.dependent = dependent
         self.update(kwargs)
+        self.__dependent_nodes = None
 
     @property
     def head_node(self):
@@ -484,6 +485,14 @@ class DP(Niklanson):
         else:
             return None
         
+    @property
+    def dependent_nodes(self):
+        if self.__dependent_nodes is None:
+           self.__dependent_nodes = []
+           for d in self.dependent:
+               self.__dependent_nodes.append(self.parent.dp_list[d - 1])
+
+        return self.__dependent_nodes
         
 class DPList(NiklansonList):
     element_type = DP
