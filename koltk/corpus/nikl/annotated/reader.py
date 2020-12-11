@@ -17,9 +17,9 @@ class NiklansonReader:
     corpus or a doucment.
 
     """
-    def __init__(self, filename):
+    def __init__(self, filename, encoding='utf-8'):
         self.__filename = filename
-        with open(filename) as file:
+        with open(filename, encoding=encoding) as file:
             self.__data = json.load(file)
             
             if 'document' in self.__data:
@@ -80,9 +80,9 @@ class NiklansonCorpusReader:
     
     Read a NIKL annotated corpus JSON file.
     """
-    def __init__(self, filename):
+    def __init__(self, filename, encoding='utf-8'):
         self.filename = filename
-        with open(filename) as file:
+        with open(filename, encoding=encoding) as file:
             self.data = json.load(file)
         
     @property
@@ -94,9 +94,9 @@ class NiklansonDocumentReader:
 
     Read NIKL annotated document JSON files
     """
-    def __init__(self, filename):
+    def __init__(self, filename, encoding='utf-8'):
         self.filename = filename
-        with open(filename) as file:
+        with open(filename, encoding=encoding) as file:
             self.data = json.load(file)
 
     @property
