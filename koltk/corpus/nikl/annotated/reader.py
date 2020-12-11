@@ -17,19 +17,18 @@ class NiklansonReader:
     corpus or a doucment.
 
     """
-    def __init__(self, filename):
-        self.__filename = filename
-        with open(filename) as file:
-            self.__data = json.load(file)
-            
-            if 'document' in self.__data:
-                self.__toplevel = 'corpus'
-                self.__corpus = Corpus.from_dict(self.__data)
-            elif 'sentence' in self.__data:
-                self.__toplevel = 'document'
-                self.__document = Document.from_dict(self.__data)
-            else:
-                self.__toplevel = None
+    def __init__(self, file):
+        self.__filename = file.name
+        self.__data = json.load(file)
+
+        if 'document' in self.__data:
+            self.__toplevel = 'corpus'
+            self.__corpus = Corpus.from_dict(self.__data)
+        elif 'sentence' in self.__data:
+            self.__toplevel = 'document'
+            self.__document = Document.from_dict(self.__data)
+        else:
+            self.__toplevel = None
 
     @property
     def filename(self):
@@ -80,10 +79,9 @@ class NiklansonCorpusReader:
     
     Read a NIKL annotated corpus JSON file.
     """
-    def __init__(self, filename):
-        self.filename = filename
-        with open(filename) as file:
-            self.data = json.load(file)
+    def __init__(self, file):
+        self.filename = file.name
+        self.data = json.load(file)
         
     @property
     def corpus(self):
@@ -94,10 +92,9 @@ class NiklansonDocumentReader:
 
     Read NIKL annotated document JSON files
     """
-    def __init__(self, filename):
-        self.filename = filename
-        with open(filename) as file:
-            self.data = json.load(file)
+    def __init__(self, file, encoding='utf-8'):
+        self.filename = file.name
+        self.data = json.load(file)
 
     @property
     def document(self):
