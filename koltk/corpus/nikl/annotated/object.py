@@ -378,7 +378,6 @@ class Morpheme(Niklanson):
         self.word_id = word_id
         self.position = position
         self.update(kwargs)
-        self.__str = None
 
     @classmethod
     def strict(cls, id, form, label, word_id, position):
@@ -386,7 +385,7 @@ class Morpheme(Niklanson):
 
     @property
     def str(self):
-        if self.__str is None:
+        if not hasattr(self, '__str'):
             self.__str = self.form + '/' + self.label
 
         return self.__str
