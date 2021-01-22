@@ -536,6 +536,23 @@ class SRLPredicate(Niklanson):
     def str(self):
         return '{}__{}'.format(self.lemma, self.sense_id)
 
+    @property
+    def first_word(self):
+        if not hasattr(self, '__first_word'):
+            self.__first_word = self.parent.parent.wordAt(self.begin)
+
+        return self.__first_word
+        
+    @property
+    def last_word(self):
+        if not hasattr(self, '__last_word'):
+            last_word_form = self.form.split()[-1]
+            self.__last_word = self.parent.parent.wordAt(self.end - len(last_word_form))
+
+        return self.__last_word
+
+
+
 class SRLArgument(Niklanson):
 
     def __init__(self,
@@ -560,7 +577,20 @@ class SRLArgument(Niklanson):
     def str(self):
         return '{}/{}'.format(self.form.split()[-1], self.label)
 
+    @property
+    def first_word(self):
+        if not hasattr(self, '__first_word'):
+            self.__first_word = self.parent.parent.wordAt(self.begin)
 
+        return self.__first_word
+        
+    @property
+    def last_word(self):
+        if not hasattr(self, '__last_word'):
+            last_word_form = self.form.split()[-1]
+            self.__last_word = self.parent.parent.wordAt(self.end - len(last_word_form))
+
+        return self.__last_word
 
 class SRLArgumentList(NiklansonList):
     element_type = SRLArgument
