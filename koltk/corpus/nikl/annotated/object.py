@@ -115,10 +115,10 @@ class DocumentMetadata(Niklanson):
                  url : str = None,            # optional attribute
                  **kwargs):
         super().__init__(parent=parent)
-        self.date = date
         self.title = title 
         self.author = author
         self.publisher = publisher
+        self.date = date
         self.topic = topic
         if url is not None: self.url = url
         self.update(kwargs)
@@ -639,10 +639,10 @@ class CRMention(Niklanson):
                  **kwargs):
         super().__init__(parent=parent)
         self.form = form
+        self.NE_id = NE_id
         self.sentence_id = sentence_id
         self.begin = begin
         self.end = end
-        self.NE_id = NE_id
         self.update(kwargs)
 
     @classmethod
