@@ -163,7 +163,7 @@ class Document(Niklanson):
             #
             # - (2019 spoken annotated corpus) document id example: SARW180000004
             # - (2020 version) document id example: SARW180000004.1
-            #           
+            #
             return '{}-0001'.format(toks[0])
         elif len(toks) == 2:
             return '{}-{:04d}'.format(toks[0], int(toks[1]))
@@ -239,7 +239,7 @@ class Sentence(Niklanson):
             b = 0
             for i, wform in enumerate(self.form.split()):
                 e = b + len(wform)
-                self.word.append(Word(id=i + 1, form=wform, begin=b, end=e))
+                self.word.append(Word(parent=self, id=i + 1, form=wform, begin=b, end=e))
                 b = e + 1
 
         return self.word
