@@ -159,6 +159,11 @@ class Document(Niklanson):
     def fwid(self):
         toks = self.id.split('.')
         if len(toks) == 1:
+            # This option (for 2019 spoken annotated corpus) will be deprecated.
+            #
+            # - (2019 spoken annotated corpus) document id example: SARW180000004
+            # - (2020 version) document id example: SARW180000004.1
+            #           
             return '{}-0001'.format(toks[0])
         elif len(toks) == 2:
             return '{}-{:04d}'.format(toks[0], int(toks[1]))
@@ -276,6 +281,11 @@ class Sentence(Niklanson):
     def fwid(self):
         toks = self.id.split(".")
         if len(toks) == 2:
+            # This option (for 2019 spoken annotated corpus) will be deprecated.
+            #
+            # - (2019 spoken annotated corpus) sentence id example: SARW180000004.3
+            # - (2020 version) document id example: SARW180000004.1.1.3
+            #
             docid, sentnum = toks
             fw_sid = "{}-{:04d}-{:05d}-{:05d}".format(docid, 1, 1, int(sentnum))
         elif len(toks) == 4:
