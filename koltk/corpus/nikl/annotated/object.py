@@ -223,7 +223,7 @@ class Sentence(Niklanson):
             if name == 'word' : self.word = WordList(value, parent=self)
             elif name == 'morpheme' : self.morpheme = MorphemeList(value, parent=self)
             elif name == 'WSD' : self.WSD = WSDList(value, parent=self)
-            elif name == 'NE' : self.NE = NEList(value, parent=self)
+            elif name == 'NE' or name == 'ne' : self.NE = NEList(value, parent=self)
             elif name == 'DP' : self.DP = DPList(value, parent=self)
             elif name == 'SRL' : self.SRL = SRLList(value, parent=self)
             else: setattr(self, name, value)
@@ -364,6 +364,52 @@ class Word(Niklanson):
     @property
     def swid(self):
         return '{}_{}'.format(self.parent.snum, self.id)
+
+    def neighborAt(self, relative_index, default=None):
+        """
+        Return the neighbor word at the relative_index. Or default if index is out of range.
+
+        :param relative_index:
+          eg) +1 for the next word, -1 for the previous word
+        
+        :return: a Word object
+        """
+        ind = self.id - 1 + relative_index
+        
+        if 0 <= ind < len(self.parent.word_list) :
+            return self.parent.word_list[ind]
+        else:
+            return default
+
+    def neighbors(self, first=None, last=None):
+        """
+        Return list of the neighbor words from first to last.
+        
+       :param first: relative index of the first word
+       :param last: relative index of the last word
+        """
+        ind1 = max(0, self.id - 1 + first) if first is not None else 0
+        ind2 = self.id - 1 + last if last is not None else len(self.parent.word_list)
+        return self.parent.word_list[ind1:(ind2+1)]
+
+        
+    @property
+    def prev(self):
+        return self.neighborAt(-1)
+
+    @property
+    def next(self):
+        return self.neighborAt(1)
+
+    def __next__(self):
+        n = self.neighborAt(1)
+        if n is None:
+            raise StopIteration
+        else:
+            return n
+
+    def __iter__(self):
+        return self
     
 class WordList(NiklansonList):
     element_type = Word
@@ -502,6 +548,21 @@ class DP(Niklanson):
                self.__dependent_nodes.append(self.parent.dp_list[d - 1])
 
         return self.__dependent_nodes
+
+    @property
+    def prev_node(self):
+        try:
+            return self.parent.dp_list[self.word_id - 2]
+        except IndexError:
+            return None
+
+    @property
+    def next_node(self):
+        try:
+            return self.parent.dp_list[self.word_id]
+        except IndexError:
+            return None
+        
         
 class DPList(NiklansonList):
     element_type = DP
